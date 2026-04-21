@@ -13,3 +13,7 @@ __unconfig*
 todos.json
 drizzle/
 tmp/
+.agents
+
+.claude
+skills/
