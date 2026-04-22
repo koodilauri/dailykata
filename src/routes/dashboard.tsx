@@ -91,18 +91,28 @@ function Dashboard() {
       ) : (
         <ul className="flex flex-col gap-2">
           {progress.map(p => (
-            <li key={p.kataId}>
+            <li
+              key={p.kataId}
+              className="flex items-center gap-2 rounded-lg border px-4 py-3 text-sm"
+            >
+              <span className="text-muted-foreground w-6 text-right">{p.kataOrder}.</span>
               <Link
                 to="/kata/$kataId"
                 params={{ kataId: p.kataId }}
-                className="hover:bg-accent flex items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors"
+                className="hover:text-foreground flex-1 font-medium transition-colors"
               >
-                <span className="text-muted-foreground w-6 text-right">{p.kataOrder}.</span>
-                <span className="flex-1 font-medium">{p.kataTitle}</span>
-                <Badge variant="outline" className={difficultyColor[p.kataDifficulty]}>
-                  {p.kataDifficulty}
-                </Badge>
-                <span className="text-muted-foreground text-xs">+{p.xpEarned} XP</span>
+                {p.kataTitle}
+              </Link>
+              <Badge variant="outline" className={difficultyColor[p.kataDifficulty]}>
+                {p.kataDifficulty}
+              </Badge>
+              <span className="text-muted-foreground text-xs">+{p.xpEarned} XP</span>
+              <Link
+                to="/kata/$kataId/submissions"
+                params={{ kataId: p.kataId }}
+                className="text-muted-foreground hover:text-foreground text-xs underline underline-offset-2 transition-colors"
+              >
+                submissions
               </Link>
             </li>
           ))}

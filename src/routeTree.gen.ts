@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as KataKataIdRouteImport } from './routes/kata/$kataId'
 import { Route as AdminNewRouteImport } from './routes/admin/new'
+import { Route as KataKataIdSubmissionsRouteImport } from './routes/kata/$kataId_.submissions'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AdminKataIdEditRouteImport } from './routes/admin/$kataId.edit'
 
@@ -42,6 +43,11 @@ const AdminNewRoute = AdminNewRouteImport.update({
   path: '/admin/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KataKataIdSubmissionsRoute = KataKataIdSubmissionsRouteImport.update({
+  id: '/kata/$kataId_/submissions',
+  path: '/kata/$kataId/submissions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/kata/$kataId/submissions': typeof KataKataIdSubmissionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/kata/$kataId/submissions': typeof KataKataIdSubmissionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/kata/$kataId_/submissions': typeof KataKataIdSubmissionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/$kataId/edit'
     | '/api/auth/$'
+    | '/kata/$kataId/submissions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/$kataId/edit'
     | '/api/auth/$'
+    | '/kata/$kataId/submissions'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/$kataId/edit'
     | '/api/auth/$'
+    | '/kata/$kataId_/submissions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminKataIdEditRoute: typeof AdminKataIdEditRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  KataKataIdSubmissionsRoute: typeof KataKataIdSubmissionsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kata/$kataId_/submissions': {
+      id: '/kata/$kataId_/submissions'
+      path: '/kata/$kataId/submissions'
+      fullPath: '/kata/$kataId/submissions'
+      preLoaderRoute: typeof KataKataIdSubmissionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminKataIdEditRoute: AdminKataIdEditRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  KataKataIdSubmissionsRoute: KataKataIdSubmissionsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

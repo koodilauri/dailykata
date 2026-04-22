@@ -16,6 +16,12 @@ export const Route = createFileRoute('/admin/')({
   component: AdminIndex
 })
 
+const difficultyColor = {
+  easy: 'border-green-300 text-green-700',
+  medium: 'border-yellow-300 text-yellow-700',
+  hard: 'border-red-300 text-red-700'
+}
+
 function AdminIndex() {
   const katas = Route.useLoaderData()
   const router = useRouter()
@@ -44,16 +50,7 @@ function AdminIndex() {
           >
             <span className="text-muted-foreground w-6 text-right">{kata.order}.</span>
             <span className="flex-1 font-medium">{kata.title}</span>
-            <Badge
-              variant="outline"
-              className={
-                kata.difficulty === 'easy'
-                  ? 'border-green-300 text-green-700'
-                  : kata.difficulty === 'medium'
-                    ? 'border-yellow-300 text-yellow-700'
-                    : 'border-red-300 text-red-700'
-              }
-            >
+            <Badge variant="outline" className={difficultyColor[kata.difficulty]}>
               {kata.difficulty}
             </Badge>
             <Badge variant={kata.published ? 'default' : 'secondary'}>

@@ -78,3 +78,16 @@ export const submitKata = createServerFn({ method: 'POST' })
 
     return { requiresAuth: false as const, xpEarned: alreadyCompleted ? 0 : XP_PER_KATA }
   })
+
+export const getKataSubmissions = createServerFn({ method: 'GET' })
+  .inputValidator((d: { kataId: string }) => d)
+  .handler(async ({ data }) => {
+    const request = getRequest()
+    const session = await createAuth().api.getSession({ headers: request.headers })
+    if (!session) return []
+    const db = createDb()
+    return db.query.submission.findMany({
+      where: (s, { and, eq }) => and(eq(s.userId, session.user.id), eq(s.kataId, data.kataId)),
+      orderBy: (s, { desc }) => desc(s.submittedAt)
+    })
+  })
