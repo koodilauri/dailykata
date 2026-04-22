@@ -9,13 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as KataKataIdRouteImport } from './routes/kata/$kataId'
+import { Route as AdminNewRouteImport } from './routes/admin/new'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AdminKataIdEditRouteImport } from './routes/admin/$kataId.edit'
 
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KataKataIdRoute = KataKataIdRouteImport.update({
@@ -23,49 +37,111 @@ const KataKataIdRoute = KataKataIdRouteImport.update({
   path: '/kata/$kataId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminNewRoute = AdminNewRouteImport.update({
+  id: '/admin/new',
+  path: '/admin/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminKataIdEditRoute = AdminKataIdEditRouteImport.update({
+  id: '/admin/$kataId/edit',
+  path: '/admin/$kataId/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/admin/new': typeof AdminNewRoute
   '/kata/$kataId': typeof KataKataIdRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/admin/new': typeof AdminNewRoute
   '/kata/$kataId': typeof KataKataIdRoute
+  '/admin': typeof AdminIndexRoute
+  '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/admin/new': typeof AdminNewRoute
   '/kata/$kataId': typeof KataKataIdRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/kata/$kataId' | '/api/auth/$'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/admin/new'
+    | '/kata/$kataId'
+    | '/admin/'
+    | '/admin/$kataId/edit'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/kata/$kataId' | '/api/auth/$'
-  id: '__root__' | '/' | '/kata/$kataId' | '/api/auth/$'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/admin/new'
+    | '/kata/$kataId'
+    | '/admin'
+    | '/admin/$kataId/edit'
+    | '/api/auth/$'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/admin/new'
+    | '/kata/$kataId'
+    | '/admin/'
+    | '/admin/$kataId/edit'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
+  AdminNewRoute: typeof AdminNewRoute
   KataKataIdRoute: typeof KataKataIdRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminKataIdEditRoute: typeof AdminKataIdEditRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kata/$kataId': {
@@ -75,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KataKataIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/new': {
+      id: '/admin/new'
+      path: '/admin/new'
+      fullPath: '/admin/new'
+      preLoaderRoute: typeof AdminNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -82,12 +165,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/$kataId/edit': {
+      id: '/admin/$kataId/edit'
+      path: '/admin/$kataId/edit'
+      fullPath: '/admin/$kataId/edit'
+      preLoaderRoute: typeof AdminKataIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
+  AdminNewRoute: AdminNewRoute,
   KataKataIdRoute: KataKataIdRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  AdminKataIdEditRoute: AdminKataIdEditRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
