@@ -16,7 +16,7 @@ import { submitKata } from '#/server/submission'
 import { javascript } from '@codemirror/lang-javascript'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { basicSetup, EditorView } from 'codemirror'
-import { Flame, Play } from 'lucide-react'
+import { Flame, Lightbulb, Play } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { TestResults } from './TestResults'
@@ -47,6 +47,8 @@ export function KataEditor({ kata }: { kata: Kata }) {
   const [running, setRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
+  const [revealedHints, setRevealedHints] = useState(0)
+  const hints = kata.hints ?? []
 
   useEffect(() => {
     if (!editorRef.current) return
@@ -108,7 +110,7 @@ export function KataEditor({ kata }: { kata: Kata }) {
   }
 
   return (
-    <div className="flex h-[calc(100vh-3rem)] flex-col">
+    <div className="flex h-full flex-1 flex-col">
       <div className="flex items-center gap-3 border-b px-4 py-2">
         <span className="font-semibold">{kata.title}</span>
         <Badge className={difficultyColor[kata.difficulty]}>{kata.difficulty}</Badge>
@@ -124,6 +126,30 @@ export function KataEditor({ kata }: { kata: Kata }) {
         <ResizablePanel defaultSize={30} minSize={20}>
           <div className="h-full overflow-auto p-4 text-sm leading-relaxed">
             <pre className="font-sans whitespace-pre-wrap">{kata.description}</pre>
+
+            {hints.length > 0 && (
+              <div className="mt-6 border-t pt-4">
+                <div className="text-muted-foreground mb-3 flex items-center gap-1.5 text-xs font-medium tracking-wider uppercase">
+                  <Lightbulb className="h-3.5 w-3.5" />
+                  Hints
+                </div>
+                <div className="flex flex-col gap-2">
+                  {hints.slice(0, revealedHints).map((hint, i) => (
+                    <div key={i} className="bg-muted rounded p-2.5 text-xs">
+                      <span className="font-semibold">Hint {i + 1}:</span> {hint}
+                    </div>
+                  ))}
+                </div>
+                {revealedHints < hints.length && (
+                  <button
+                    onClick={() => setRevealedHints(c => c + 1)}
+                    className="text-muted-foreground hover:text-foreground mt-2 text-xs underline underline-offset-2"
+                  >
+                    Show hint {revealedHints + 1}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </ResizablePanel>
 
