@@ -1,9 +1,12 @@
 import { submission, userProgress, userStats, xpEvent } from '#/db/schema'
 import { createAuth } from '#/lib/auth'
 import { createDb } from '#/lib/db'
+import { logger } from '#/lib/logger'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { and, eq, sql } from 'drizzle-orm'
+
+const log = logger.withTag('submission')
 
 const XP_PER_KATA = 100
 
@@ -15,6 +18,7 @@ export const submitKata = createServerFn({ method: 'POST' })
     if (!session) return { requiresAuth: true as const }
 
     const userId = session.user.id
+    log.debug('submitKata', { kataId: data.kataId, passed: data.passed, userId })
     const db = createDb()
 
     const prev = await db.query.userProgress.findFirst({
@@ -76,7 +80,9 @@ export const submitKata = createServerFn({ method: 'POST' })
         })
     })
 
-    return { requiresAuth: false as const, xpEarned: alreadyCompleted ? 0 : XP_PER_KATA }
+    const xpEarned = alreadyCompleted ? 0 : XP_PER_KATA
+    log.info('submission recorded', { kataId: data.kataId, passed: data.passed, xpEarned })
+    return { requiresAuth: false as const, xpEarned }
   })
 
 export const getKataSubmissions = createServerFn({ method: 'GET' })
@@ -85,6 +91,7 @@ export const getKataSubmissions = createServerFn({ method: 'GET' })
     const request = getRequest()
     const session = await createAuth().api.getSession({ headers: request.headers })
     if (!session) return []
+    log.debug('getKataSubmissions', { kataId: data.kataId, userId: session.user.id })
     const db = createDb()
     return db.query.submission.findMany({
       where: (s, { and, eq }) => and(eq(s.userId, session.user.id), eq(s.kataId, data.kataId)),
