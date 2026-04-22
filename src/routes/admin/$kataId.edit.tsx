@@ -1,7 +1,7 @@
 import { KataForm, type KataFormData } from '#/components/admin/KataForm'
 import { getSession } from '#/server/auth'
 import { getKataForAdmin, updateKata } from '#/server/kata'
-import { createFileRoute, notFound, redirect, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, notFound, redirect, useNavigate, useRouter } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/admin/$kataId/edit')({
   beforeLoad: async () => {
@@ -26,6 +26,7 @@ export const Route = createFileRoute('/admin/$kataId/edit')({
 function EditKata() {
   const kata = Route.useLoaderData()
   const navigate = useNavigate()
+  const router = useRouter()
 
   async function handleSubmit(form: KataFormData) {
     const hints = form.hints
@@ -33,6 +34,7 @@ function EditKata() {
       .map(h => h.trim())
       .filter(Boolean)
     await updateKata({ data: { id: kata.id, ...form, hints } })
+    await router.invalidate()
     await navigate({ to: '/admin' })
   }
 
