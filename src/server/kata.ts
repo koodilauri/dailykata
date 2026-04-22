@@ -1,18 +1,86 @@
-import { db } from '#/lib/db'
+import { kata } from '#/db/schema'
+import { createAuth } from '#/lib/auth'
+import { createDb } from '#/lib/db'
 import { createServerFn } from '@tanstack/react-start'
+import { getRequest } from '@tanstack/react-start/server'
+import { eq } from 'drizzle-orm'
 
 export const getKata = createServerFn({ method: 'GET' })
   .inputValidator((d: { kataId: string }) => d)
   .handler(async ({ data }) => {
+    const db = createDb()
     return db.query.kata.findFirst({
       where: (k, { and, eq }) => and(eq(k.id, data.kataId), eq(k.published, true))
     })
   })
 
 export const getKatas = createServerFn({ method: 'GET' }).handler(async () => {
+  const db = createDb()
   return db.query.kata.findMany({
     where: (k, { eq }) => eq(k.published, true),
     orderBy: (k, { asc }) => asc(k.order),
     columns: { id: true, title: true, difficulty: true, order: true }
   })
 })
+
+// --- Admin functions (require admin role) ---
+
+async function requireAdmin() {
+  const request = getRequest()
+  const session = await createAuth().api.getSession({ headers: request.headers })
+  if (!session || (session.user as { role?: string }).role !== 'admin') {
+    throw new Error('Forbidden')
+  }
+  return session
+}
+
+export const getAllKatas = createServerFn({ method: 'GET' }).handler(async () => {
+  await requireAdmin()
+  const db = createDb()
+  return db.query.kata.findMany({ orderBy: (k, { asc }) => asc(k.order) })
+})
+
+type KataInput = {
+  title: string
+  description: string
+  starterCode: string
+  tests: string
+  hints: string[]
+  difficulty: 'easy' | 'medium' | 'hard'
+  order: number
+  published: boolean
+}
+
+export const createKata = createServerFn({ method: 'POST' })
+  .inputValidator((d: KataInput) => d)
+  .handler(async ({ data }) => {
+    await requireAdmin()
+    const db = createDb()
+    const [created] = await db.insert(kata).values(data).returning({ id: kata.id })
+    return created
+  })
+
+export const updateKata = createServerFn({ method: 'POST' })
+  .inputValidator((d: { id: string } & KataInput) => d)
+  .handler(async ({ data }) => {
+    await requireAdmin()
+    const { id, ...fields } = data
+    const db = createDb()
+    await db.update(kata).set(fields).where(eq(kata.id, id))
+  })
+
+export const togglePublish = createServerFn({ method: 'POST' })
+  .inputValidator((d: { id: string; published: boolean }) => d)
+  .handler(async ({ data }) => {
+    await requireAdmin()
+    const db = createDb()
+    await db.update(kata).set({ published: data.published }).where(eq(kata.id, data.id))
+  })
+
+export const getKataForAdmin = createServerFn({ method: 'GET' })
+  .inputValidator((d: { kataId: string }) => d)
+  .handler(async ({ data }) => {
+    await requireAdmin()
+    const db = createDb()
+    return db.query.kata.findFirst({ where: (k, { eq }) => eq(k.id, data.kataId) })
+  })
