@@ -5,6 +5,7 @@ import * as schema from '#/db/schema'
 
 export function createAuth() {
   return betterAuth({
+    baseURL: process.env.BETTER_AUTH_URL,
     database: drizzleAdapter(createDb(), {
       provider: 'pg',
       schema: {
