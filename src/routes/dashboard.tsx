@@ -1,10 +1,10 @@
 import { Badge } from '#/components/ui/badge'
-import { Progress } from '#/components/ui/progress'
 import { Skeleton } from '#/components/ui/skeleton'
+import { cn } from '#/lib/utils'
 import { getSession } from '#/server/auth'
 import { getUserProgress, getUserStats } from '#/server/progress'
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
-import { Flame, Trophy, Zap } from 'lucide-react'
+import { ArrowRight, Flame, Trophy, Zap } from 'lucide-react'
 
 export const Route = createFileRoute('/dashboard')({
   beforeLoad: async () => {
@@ -22,6 +22,12 @@ export const Route = createFileRoute('/dashboard')({
 
 const XP_PER_LEVEL = 500
 
+const difficultyConfig = {
+  easy: 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10',
+  medium: 'border-amber-500/30 text-amber-400 bg-amber-500/10',
+  hard: 'border-red-500/30 text-red-400 bg-red-500/10'
+}
+
 function Dashboard() {
   const { stats, progress } = Route.useLoaderData()
   const { session } = Route.useRouteContext()
@@ -33,111 +39,151 @@ function Dashboard() {
   const xpIntoLevel = totalXp % XP_PER_LEVEL
   const xpPct = Math.round((xpIntoLevel / XP_PER_LEVEL) * 100)
 
-  const difficultyColor = {
-    easy: 'border-green-300 text-green-700 dark:border-green-700 dark:text-green-400',
-    medium: 'border-yellow-300 text-yellow-700 dark:border-yellow-700 dark:text-yellow-400',
-    hard: 'border-red-300 text-red-700 dark:border-red-700 dark:text-red-400'
-  }
-
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="mb-1 text-2xl font-bold tracking-tight">
-        {session.user.name ?? 'Your'} progress
-      </h1>
-      <p className="text-muted-foreground mb-8 text-sm">{session.user.email}</p>
-
-      {/* Stats row */}
-      <div className="mb-8 grid grid-cols-3 gap-4">
-        <StatCard
-          icon={<Zap className="h-5 w-5 text-yellow-500" />}
-          label="Total XP"
-          value={totalXp}
-        />
-        <StatCard
-          icon={<Flame className="h-5 w-5 text-orange-500" />}
-          label="Current streak"
-          value={`${currentStreak}d`}
-        />
-        <StatCard
-          icon={<Trophy className="h-5 w-5 text-purple-500" />}
-          label="Longest streak"
-          value={`${longestStreak}d`}
-        />
+    <div className="relative min-h-[calc(100vh-3rem)]">
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="bg-primary/10 absolute -top-32 left-1/2 h-[400px] w-[600px] -translate-x-1/2 rounded-full blur-[100px]" />
       </div>
 
-      {/* XP progress */}
-      <div className="mb-8 rounded-lg border p-4">
-        <div className="mb-2 flex items-center justify-between text-sm">
-          <span className="font-medium">Level {level}</span>
-          <span className="text-muted-foreground">
-            {xpIntoLevel} / {XP_PER_LEVEL} XP
-          </span>
+      <div className="relative z-10 mx-auto max-w-2xl px-4 py-10">
+        <div className="animate-fade-up" style={{ animationDelay: '0ms' }}>
+          <h1 className="mb-1 text-2xl font-bold tracking-tight">
+            {session.user.name ?? 'Your'} progress
+          </h1>
+          <p className="text-muted-foreground mb-8 text-sm">{session.user.email}</p>
         </div>
-        <Progress value={xpPct} className="h-2" />
-        <p className="text-muted-foreground mt-1 text-xs">
-          {XP_PER_LEVEL - xpIntoLevel} XP to level {level + 1}
-        </p>
-      </div>
 
-      {/* Completed katas */}
-      <h2 className="mb-3 font-semibold">Completed katas ({progress.length})</h2>
-      {progress.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          No katas completed yet.{' '}
-          <Link to="/" className="underline underline-offset-2">
-            Start one now →
-          </Link>
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {progress.map(p => (
-            <li
-              key={p.kataId}
-              className="flex items-center gap-2 rounded-lg border px-4 py-3 text-sm"
-            >
-              <span className="text-muted-foreground w-6 text-right">{p.kataOrder}.</span>
+        {/* Stats row */}
+        <div
+          className="animate-fade-up mb-6 grid grid-cols-3 gap-3"
+          style={{ animationDelay: '60ms' }}
+        >
+          <StatCard
+            icon={<Zap className="h-5 w-5" />}
+            iconBg="bg-yellow-500/15 text-yellow-400"
+            label="Total XP"
+            value={totalXp.toLocaleString()}
+          />
+          <StatCard
+            icon={<Flame className="h-5 w-5" />}
+            iconBg="bg-orange-500/15 text-orange-400"
+            label="Current streak"
+            value={`${currentStreak}d`}
+          />
+          <StatCard
+            icon={<Trophy className="h-5 w-5" />}
+            iconBg="bg-sky-500/15 text-sky-400"
+            label="Longest streak"
+            value={`${longestStreak}d`}
+          />
+        </div>
+
+        {/* XP / level card */}
+        <div
+          className="animate-fade-up border-border bg-card mb-8 rounded-xl border p-5 backdrop-blur-sm"
+          style={{ animationDelay: '120ms' }}
+        >
+          <div className="mb-3 flex items-end justify-between">
+            <div>
+              <div className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
+                Level
+              </div>
+              <div className="text-3xl font-bold tabular-nums">{level}</div>
+            </div>
+            <div className="text-right">
+              <div className="text-muted-foreground text-xs">
+                {xpIntoLevel.toLocaleString()} / {XP_PER_LEVEL} XP
+              </div>
+              <div className="text-muted-foreground text-xs">
+                {(XP_PER_LEVEL - xpIntoLevel).toLocaleString()} to level {level + 1}
+              </div>
+            </div>
+          </div>
+          <div className="bg-secondary relative h-2 overflow-hidden rounded-full">
+            <div
+              className="bg-primary h-full rounded-full transition-all duration-700"
+              style={{ width: `${xpPct}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Completed katas */}
+        <div className="animate-fade-up" style={{ animationDelay: '180ms' }}>
+          <div className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-medium tracking-widest uppercase">
+            <span>Completed katas</span>
+            <div className="bg-border/50 h-px flex-1" />
+            <span>{progress.length}</span>
+          </div>
+
+          {progress.length === 0 ? (
+            <div className="border-border bg-card rounded-xl border px-4 py-8 text-center backdrop-blur-sm">
+              <p className="text-muted-foreground text-sm">No katas completed yet.</p>
               <Link
-                to="/kata/$kataId"
-                params={{ kataId: p.kataId }}
-                className="hover:text-foreground flex-1 font-medium transition-colors"
+                to="/"
+                className="text-primary mt-2 inline-flex items-center gap-1 text-sm hover:underline"
               >
-                {p.kataTitle}
+                Start one now <ArrowRight className="h-3.5 w-3.5" />
               </Link>
-              <Badge variant="outline" className={difficultyColor[p.kataDifficulty]}>
-                {p.kataDifficulty}
-              </Badge>
-              <span className="text-muted-foreground text-xs">+{p.xpEarned} XP</span>
-              <Link
-                to="/kata/$kataId/submissions"
-                params={{ kataId: p.kataId }}
-                className="text-muted-foreground hover:text-foreground text-xs underline underline-offset-2 transition-colors"
-              >
-                submissions
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {progress.map((p, i) => (
+                <li
+                  key={p.kataId}
+                  className="animate-fade-up"
+                  style={{ animationDelay: `${220 + i * 30}ms` }}
+                >
+                  <Link
+                    to="/kata/$kataId"
+                    params={{ kataId: p.kataId }}
+                    className={cn(
+                      'group border-border bg-card flex items-center gap-3 rounded-xl border px-4 py-3 text-sm backdrop-blur-sm',
+                      'hover:border-primary/60 hover:bg-secondary hover:shadow-primary/10 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg'
+                    )}
+                  >
+                    <span className="text-muted-foreground w-6 shrink-0 text-right text-xs tabular-nums">
+                      {p.kataOrder}.
+                    </span>
+                    <span className="flex-1 font-medium">{p.kataTitle}</span>
+                    <Badge
+                      variant="outline"
+                      className={cn('border text-xs', difficultyConfig[p.kataDifficulty])}
+                    >
+                      {p.kataDifficulty}
+                    </Badge>
+                    <span className="text-primary text-xs font-medium">+{p.xpEarned} XP</span>
+                    <ArrowRight className="text-muted-foreground group-hover:text-primary h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
 
 function StatCard({
   icon,
+  iconBg,
   label,
   value
 }: {
   icon: React.ReactNode
+  iconBg: string
   label: string
   value: string | number
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-lg border p-4">
-      <div className="flex items-center gap-2">
-        {icon}
-        <span className="text-muted-foreground text-xs">{label}</span>
+    <div className="border-border bg-card flex flex-col gap-3 rounded-xl border p-4 backdrop-blur-sm">
+      <div className="flex items-center justify-between">
+        <span className="text-muted-foreground text-xs font-medium">{label}</span>
+        <div className={cn('flex h-8 w-8 items-center justify-center rounded-lg', iconBg)}>
+          {icon}
+        </div>
       </div>
-      <span className="text-2xl font-bold">{value}</span>
+      <span className="text-3xl font-bold tabular-nums">{value}</span>
     </div>
   )
 }
@@ -147,16 +193,16 @@ function DashboardSkeleton() {
     <div className="mx-auto max-w-2xl px-4 py-10">
       <Skeleton className="mb-1 h-8 w-48" />
       <Skeleton className="mb-8 h-4 w-40" />
-      <div className="mb-8 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-3 gap-3">
         {[0, 1, 2].map(i => (
-          <Skeleton key={i} className="h-20 rounded-lg" />
+          <Skeleton key={i} className="h-24 rounded-xl" />
         ))}
       </div>
-      <Skeleton className="mb-8 h-16 rounded-lg" />
-      <Skeleton className="mb-3 h-5 w-40" />
+      <Skeleton className="mb-8 h-24 rounded-xl" />
+      <Skeleton className="mb-4 h-5 w-40" />
       <div className="flex flex-col gap-2">
         {[0, 1, 2].map(i => (
-          <Skeleton key={i} className="h-12 rounded-lg" />
+          <Skeleton key={i} className="h-12 rounded-xl" />
         ))}
       </div>
     </div>
