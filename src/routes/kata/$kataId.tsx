@@ -14,7 +14,7 @@ export const Route = createFileRoute('/kata/$kataId')({
     ])
     if (!kata) throw notFound()
     const completedIds = progress.map(p => p.kataId)
-    return { kata, katas, completedIds, stats }
+    return { kata, katas, completedIds, stats: stats ?? null }
   },
   notFoundComponent: () => (
     <div className="text-muted-foreground flex h-screen items-center justify-center">

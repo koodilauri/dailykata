@@ -1,7 +1,7 @@
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { getSession } from '#/server/auth'
-import { getAllKatas, togglePublish } from '#/server/kata'
+import { getAllKatas } from '#/server/kata'
 import { createFileRoute, redirect, useNavigate, useRouter } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 
@@ -28,7 +28,11 @@ function AdminIndex() {
   const navigate = useNavigate()
 
   async function handleToggle(id: string, published: boolean) {
-    await togglePublish({ data: { id, published: !published } })
+    await fetch(`/api/admin/katas/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'publish', published: !published })
+    })
     await router.invalidate()
   }
 

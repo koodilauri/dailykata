@@ -1,6 +1,5 @@
 import { KataForm, type KataFormData } from '#/components/admin/KataForm'
 import { getSession } from '#/server/auth'
-import { createKata } from '#/server/kata'
 import { createFileRoute, redirect, useNavigate, useRouter } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/admin/new')({
@@ -22,7 +21,11 @@ function NewKata() {
       .split('\n')
       .map(h => h.trim())
       .filter(Boolean)
-    await createKata({ data: { ...form, hints } })
+    await fetch('/api/admin/katas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...form, hints })
+    })
     await router.invalidate()
     await navigate({ to: '/admin' })
   }
