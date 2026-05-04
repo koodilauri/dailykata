@@ -18,6 +18,7 @@ import { Route as KataKataIdRouteImport } from './routes/kata/$kataId'
 import { Route as AdminNewRouteImport } from './routes/admin/new'
 import { Route as ApiSubmissionsIndexRouteImport } from './routes/api/submissions/index'
 import { Route as KataKataIdSubmissionsRouteImport } from './routes/kata/$kataId_.submissions'
+import { Route as ApiAuthTestLoginRouteImport } from './routes/api/auth/test-login'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AdminKataIdEditRouteImport } from './routes/admin/$kataId.edit'
 import { Route as ApiAdminKatasIndexRouteImport } from './routes/api/admin/katas/index'
@@ -68,6 +69,11 @@ const KataKataIdSubmissionsRoute = KataKataIdSubmissionsRouteImport.update({
   path: '/kata/$kataId/submissions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthTestLoginRoute = ApiAuthTestLoginRouteImport.update({
+  id: '/api/auth/test-login',
+  path: '/api/auth/test-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/test-login': typeof ApiAuthTestLoginRoute
   '/kata/$kataId/submissions': typeof KataKataIdSubmissionsRoute
   '/api/submissions/': typeof ApiSubmissionsIndexRoute
   '/api/admin/katas/$kataId': typeof ApiAdminKatasKataIdRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/test-login': typeof ApiAuthTestLoginRoute
   '/kata/$kataId/submissions': typeof KataKataIdSubmissionsRoute
   '/api/submissions': typeof ApiSubmissionsIndexRoute
   '/api/admin/katas/$kataId': typeof ApiAdminKatasKataIdRoute
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/test-login': typeof ApiAuthTestLoginRoute
   '/kata/$kataId_/submissions': typeof KataKataIdSubmissionsRoute
   '/api/submissions/': typeof ApiSubmissionsIndexRoute
   '/api/admin/katas/$kataId': typeof ApiAdminKatasKataIdRoute
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/$kataId/edit'
     | '/api/auth/$'
+    | '/api/auth/test-login'
     | '/kata/$kataId/submissions'
     | '/api/submissions/'
     | '/api/admin/katas/$kataId'
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/$kataId/edit'
     | '/api/auth/$'
+    | '/api/auth/test-login'
     | '/kata/$kataId/submissions'
     | '/api/submissions'
     | '/api/admin/katas/$kataId'
@@ -177,6 +188,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/$kataId/edit'
     | '/api/auth/$'
+    | '/api/auth/test-login'
     | '/kata/$kataId_/submissions'
     | '/api/submissions/'
     | '/api/admin/katas/$kataId'
@@ -193,6 +205,7 @@ export interface RootRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminKataIdEditRoute: typeof AdminKataIdEditRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiAuthTestLoginRoute: typeof ApiAuthTestLoginRoute
   KataKataIdSubmissionsRoute: typeof KataKataIdSubmissionsRoute
   ApiSubmissionsIndexRoute: typeof ApiSubmissionsIndexRoute
   ApiAdminKatasKataIdRoute: typeof ApiAdminKatasKataIdRoute
@@ -264,6 +277,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KataKataIdSubmissionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/test-login': {
+      id: '/api/auth/test-login'
+      path: '/api/auth/test-login'
+      fullPath: '/api/auth/test-login'
+      preLoaderRoute: typeof ApiAuthTestLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -305,6 +325,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminKataIdEditRoute: AdminKataIdEditRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiAuthTestLoginRoute: ApiAuthTestLoginRoute,
   KataKataIdSubmissionsRoute: KataKataIdSubmissionsRoute,
   ApiSubmissionsIndexRoute: ApiSubmissionsIndexRoute,
   ApiAdminKatasKataIdRoute: ApiAdminKatasKataIdRoute,
