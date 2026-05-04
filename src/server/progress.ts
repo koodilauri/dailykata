@@ -1,10 +1,10 @@
-import { kata, userProgress } from '#/db/schema'
+import { kata, user, userProgress, userStats } from '#/db/schema'
 import { createAuth } from '#/lib/auth'
 import { createDb } from '#/lib/db'
 import { logger } from '#/lib/logger'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
-import { and, asc, eq } from 'drizzle-orm'
+import { and, asc, desc, eq } from 'drizzle-orm'
 
 const log = logger.withTag('progress')
 
@@ -39,4 +39,21 @@ export const getUserProgress = createServerFn({ method: 'GET' }).handler(async (
     .innerJoin(kata, eq(userProgress.kataId, kata.id))
     .where(and(eq(userProgress.userId, session.user.id), eq(userProgress.completed, true)))
     .orderBy(asc(kata.order))
+})
+
+export const getRanks = createServerFn({ method: 'GET' }).handler(async () => {
+  log.debug('getRanks')
+  const db = createDb()
+  return db
+    .select({
+      userId: userStats.userId,
+      name: user.name,
+      image: user.image,
+      totalXp: userStats.totalXp,
+      currentStreak: userStats.currentStreak
+    })
+    .from(userStats)
+    .innerJoin(user, eq(userStats.userId, user.id))
+    .orderBy(desc(userStats.totalXp))
+    .limit(20)
 })

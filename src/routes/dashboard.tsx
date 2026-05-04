@@ -1,10 +1,8 @@
-import { Badge } from '#/components/ui/badge'
-import { Skeleton } from '#/components/ui/skeleton'
 import { cn } from '#/lib/utils'
 import { getSession } from '#/server/auth'
+import { getKatas } from '#/server/kata'
 import { getUserProgress, getUserStats } from '#/server/progress'
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
-import { ArrowRight, Flame, Trophy, Zap } from 'lucide-react'
 
 export const Route = createFileRoute('/dashboard')({
   beforeLoad: async () => {
@@ -13,198 +11,208 @@ export const Route = createFileRoute('/dashboard')({
     return { session }
   },
   loader: async () => {
-    const [stats, progress] = await Promise.all([getUserStats(), getUserProgress()])
-    return { stats, progress }
+    const [stats, progress, katas] = await Promise.all([
+      getUserStats(),
+      getUserProgress(),
+      getKatas()
+    ])
+    return { stats, progress, katas }
   },
-  pendingComponent: DashboardSkeleton,
-  component: Dashboard
+  component: Home
 })
 
 const XP_PER_LEVEL = 500
 
-const difficultyConfig = {
-  easy: 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10',
-  medium: 'border-amber-500/30 text-amber-400 bg-amber-500/10',
-  hard: 'border-red-500/30 text-red-400 bg-red-500/10'
+const levelTitles: Record<number, string> = {
+  1: 'Novice',
+  2: 'Apprentice',
+  3: 'Journeyman',
+  4: 'Adept',
+  5: 'Expert',
+  6: 'Master',
+  7: 'Grandmaster'
 }
 
-function Dashboard() {
-  const { stats, progress } = Route.useLoaderData()
+const difficultyIcon: Record<string, string> = { easy: '🌿', medium: '⚡', hard: '🔥' }
+const difficultyTag: Record<string, string> = {
+  easy: 'text-emerald-400 bg-emerald-500/12',
+  medium: 'text-amber-400 bg-amber-500/10',
+  hard: 'text-red-400 bg-red-500/10'
+}
+
+function Home() {
+  const { stats, progress, katas } = Route.useLoaderData()
   const { session } = Route.useRouteContext()
 
   const totalXp = stats?.totalXp ?? 0
   const currentStreak = stats?.currentStreak ?? 0
-  const longestStreak = stats?.longestStreak ?? 0
   const level = Math.floor(totalXp / XP_PER_LEVEL) + 1
   const xpIntoLevel = totalXp % XP_PER_LEVEL
   const xpPct = Math.round((xpIntoLevel / XP_PER_LEVEL) * 100)
+  const title = levelTitles[Math.min(level, 7)] ?? 'Legend'
+
+  const completedIds = new Set(progress.map(p => p.kataId))
+  const nextKata = katas.find(k => !completedIds.has(k.id))
+  const recentProgress = [...progress].reverse().slice(0, 5)
+
+  const name = session.user.name ?? session.user.email.split('@')[0]
+  const initial = name[0].toUpperCase()
+
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   return (
-    <div className="relative min-h-[calc(100vh-3rem)]">
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="bg-primary/10 absolute -top-32 left-1/2 h-[400px] w-[600px] -translate-x-1/2 rounded-full blur-[100px]" />
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-2xl px-4 py-10">
-        <div className="animate-fade-up" style={{ animationDelay: '0ms' }}>
-          <h1 className="mb-1 text-2xl font-bold tracking-tight">
-            {session.user.name ?? 'Your'} progress
-          </h1>
-          <p className="text-muted-foreground mb-8 text-sm">{session.user.email}</p>
-        </div>
-
-        {/* Stats row */}
+    <div className="mx-auto max-w-lg">
+      {/* Hero banner */}
+      <div
+        className="relative overflow-hidden px-5 pt-6 pb-5"
+        style={{
+          background:
+            'linear-gradient(135deg, color-mix(in oklch, var(--color-background) 60%, oklch(0.25 0.08 250)) 0%, color-mix(in oklch, var(--color-background) 80%, oklch(0.2 0.06 280)) 100%)'
+        }}
+      >
         <div
-          className="animate-fade-up mb-6 grid grid-cols-3 gap-3"
-          style={{ animationDelay: '60ms' }}
-        >
-          <StatCard
-            icon={<Zap className="h-5 w-5" />}
-            iconBg="bg-yellow-500/15 text-yellow-400"
-            label="Total XP"
-            value={totalXp.toLocaleString()}
-          />
-          <StatCard
-            icon={<Flame className="h-5 w-5" />}
-            iconBg="bg-orange-500/15 text-orange-400"
-            label="Current streak"
-            value={`${currentStreak}d`}
-          />
-          <StatCard
-            icon={<Trophy className="h-5 w-5" />}
-            iconBg="bg-sky-500/15 text-sky-400"
-            label="Longest streak"
-            value={`${longestStreak}d`}
-          />
-        </div>
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse at 80% 0%, rgba(56,189,248,.1) 0%, transparent 60%), radial-gradient(ellipse at 20% 100%, rgba(167,139,250,.08) 0%, transparent 60%)'
+          }}
+        />
 
-        {/* XP / level card */}
-        <div
-          className="animate-fade-up border-border bg-card mb-8 rounded-xl border p-5 backdrop-blur-sm"
-          style={{ animationDelay: '120ms' }}
-        >
-          <div className="mb-3 flex items-end justify-between">
-            <div>
-              <div className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-                Level
-              </div>
-              <div className="text-3xl font-bold tabular-nums">{level}</div>
-            </div>
-            <div className="text-right">
-              <div className="text-muted-foreground text-xs">
-                {xpIntoLevel.toLocaleString()} / {XP_PER_LEVEL} XP
-              </div>
-              <div className="text-muted-foreground text-xs">
-                {(XP_PER_LEVEL - xpIntoLevel).toLocaleString()} to level {level + 1}
-              </div>
-            </div>
+        <div className="relative mb-5 flex items-start justify-between">
+          <div>
+            <p className="text-muted-foreground text-sm">{greeting},</p>
+            <p className="text-xl font-bold tracking-tight">{name} ⚔</p>
           </div>
-          <div className="bg-secondary relative h-2 overflow-hidden rounded-full">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-sky-600 to-violet-500 text-lg font-bold text-white shadow-lg">
+            {initial}
+          </div>
+        </div>
+
+        {/* XP bar */}
+        <div className="relative">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
+              XP to next level
+            </span>
+            <span className="text-xs font-bold text-sky-400">
+              {xpIntoLevel} / {XP_PER_LEVEL}
+            </span>
+          </div>
+          <div className="bg-secondary/60 h-2.5 overflow-hidden rounded-full">
             <div
-              className="bg-primary h-full rounded-full transition-all duration-700"
-              style={{ width: `${xpPct}%` }}
+              className="h-full rounded-full bg-linear-to-r from-sky-500 to-violet-500 transition-all duration-700"
+              style={{ width: `${xpPct}%`, boxShadow: '0 0 8px rgba(56,189,248,.5)' }}
             />
           </div>
-        </div>
-
-        {/* Completed katas */}
-        <div className="animate-fade-up" style={{ animationDelay: '180ms' }}>
-          <div className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-medium tracking-widest uppercase">
-            <span>Completed katas</span>
-            <div className="bg-border/50 h-px flex-1" />
-            <span>{progress.length}</span>
+          <div className="mt-2 flex items-center justify-between">
+            <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-sky-400 uppercase">
+              Lv {level} · {title}
+            </span>
+            <span className="text-muted-foreground text-[11px]">
+              {XP_PER_LEVEL - xpIntoLevel} XP to Lv {level + 1}
+            </span>
           </div>
+        </div>
+      </div>
 
-          {progress.length === 0 ? (
-            <div className="border-border bg-card rounded-xl border px-4 py-8 text-center backdrop-blur-sm">
-              <p className="text-muted-foreground text-sm">No katas completed yet.</p>
-              <Link
-                to="/"
-                className="text-primary mt-2 inline-flex items-center gap-1 text-sm hover:underline"
-              >
-                Start one now <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
+      {/* Stat pills */}
+      <div className="flex gap-3 px-5 py-4">
+        <StatPill emoji="🔥" value={currentStreak} label="Streak" valueClass="text-amber-400" />
+        <StatPill emoji="⚡" value={totalXp} label="Total XP" valueClass="text-sky-400" />
+        <StatPill emoji="✓" value={completedIds.size} label="Done" valueClass="text-emerald-400" />
+      </div>
+
+      {/* Continue banner */}
+      {nextKata && (
+        <div className="px-5 pb-4">
+          <Link
+            to="/kata/$kataId"
+            params={{ kataId: nextKata.id }}
+            className="flex items-center gap-3.5 rounded-2xl border border-sky-500/25 bg-sky-500/5 p-4 transition-all hover:border-sky-500/40 hover:bg-sky-500/10"
+          >
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-500/15 text-2xl">
+              {difficultyIcon[nextKata.difficulty]}
             </div>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {progress.map((p, i) => (
-                <li
-                  key={p.kataId}
-                  className="animate-fade-up"
-                  style={{ animationDelay: `${220 + i * 30}ms` }}
+            <div className="min-w-0 flex-1">
+              <p className="mb-0.5 text-[11px] font-bold tracking-wide text-sky-400 uppercase">
+                ▶ Continue
+              </p>
+              <p className="truncate text-sm font-semibold">{nextKata.title}</p>
+            </div>
+            <span className="shrink-0 text-xs font-bold text-sky-400">+100 XP</span>
+          </Link>
+        </div>
+      )}
+
+      {/* Recent katas */}
+      {recentProgress.length > 0 && (
+        <div className="px-5 pb-6">
+          <div className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-bold tracking-widest uppercase">
+            <span>📜 Recent</span>
+            <div className="bg-border/50 h-px flex-1" />
+          </div>
+          <ul className="flex flex-col gap-2">
+            {recentProgress.map(p => (
+              <li key={p.kataId}>
+                <Link
+                  to="/kata/$kataId"
+                  params={{ kataId: p.kataId }}
+                  className="border-border bg-card group flex items-center gap-3 rounded-xl border px-4 py-2.5 text-sm transition-all hover:border-emerald-500/30 hover:bg-emerald-500/5"
                 >
-                  <Link
-                    to="/kata/$kataId"
-                    params={{ kataId: p.kataId }}
+                  <span className="text-lg">{difficultyIcon[p.kataDifficulty]}</span>
+                  <span className="flex-1 truncate font-medium">{p.kataTitle}</span>
+                  <span
                     className={cn(
-                      'group border-border bg-card flex items-center gap-3 rounded-xl border px-4 py-3 text-sm backdrop-blur-sm',
-                      'hover:border-primary/60 hover:bg-secondary hover:shadow-primary/10 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg'
+                      'rounded-md px-1.5 py-0.5 text-[10px] font-bold',
+                      difficultyTag[p.kataDifficulty]
                     )}
                   >
-                    <span className="text-muted-foreground w-6 shrink-0 text-right text-xs tabular-nums">
-                      {p.kataOrder}.
-                    </span>
-                    <span className="flex-1 font-medium">{p.kataTitle}</span>
-                    <Badge
-                      variant="outline"
-                      className={cn('border text-xs', difficultyConfig[p.kataDifficulty])}
-                    >
-                      {p.kataDifficulty}
-                    </Badge>
-                    <span className="text-primary text-xs font-medium">+{p.xpEarned} XP</span>
-                    <ArrowRight className="text-muted-foreground group-hover:text-primary h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+                    {p.kataDifficulty}
+                  </span>
+                  <span className="shrink-0 text-xs font-bold text-emerald-400">+{p.xpEarned}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
+      )}
+
+      {recentProgress.length === 0 && (
+        <div className="px-5 pb-6 text-center">
+          <p className="text-muted-foreground text-sm">No katas completed yet.</p>
+          <Link
+            to="/"
+            className="mt-1 inline-block text-sm font-semibold text-sky-400 hover:underline"
+          >
+            Start your first quest →
+          </Link>
+        </div>
+      )}
     </div>
   )
 }
 
-function StatCard({
-  icon,
-  iconBg,
+function StatPill({
+  emoji,
+  value,
   label,
-  value
+  valueClass
 }: {
-  icon: React.ReactNode
-  iconBg: string
+  emoji: string
+  value: number
   label: string
-  value: string | number
+  valueClass: string
 }) {
   return (
-    <div className="border-border bg-card flex flex-col gap-3 rounded-xl border p-4 backdrop-blur-sm">
-      <div className="flex items-center justify-between">
-        <span className="text-muted-foreground text-xs font-medium">{label}</span>
-        <div className={cn('flex h-8 w-8 items-center justify-center rounded-lg', iconBg)}>
-          {icon}
-        </div>
-      </div>
-      <span className="text-3xl font-bold tabular-nums">{value}</span>
-    </div>
-  )
-}
-
-function DashboardSkeleton() {
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
-      <Skeleton className="mb-1 h-8 w-48" />
-      <Skeleton className="mb-8 h-4 w-40" />
-      <div className="mb-6 grid grid-cols-3 gap-3">
-        {[0, 1, 2].map(i => (
-          <Skeleton key={i} className="h-24 rounded-xl" />
-        ))}
-      </div>
-      <Skeleton className="mb-8 h-24 rounded-xl" />
-      <Skeleton className="mb-4 h-5 w-40" />
-      <div className="flex flex-col gap-2">
-        {[0, 1, 2].map(i => (
-          <Skeleton key={i} className="h-12 rounded-xl" />
-        ))}
-      </div>
+    <div className="border-border bg-card flex flex-1 flex-col items-center gap-0.5 rounded-2xl border py-3">
+      <span className={cn('text-lg font-black tabular-nums', valueClass)}>
+        {emoji}
+        {value}
+      </span>
+      <span className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
+        {label}
+      </span>
     </div>
   )
 }

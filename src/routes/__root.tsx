@@ -1,6 +1,7 @@
 import { Button } from '#/components/ui/button'
 import { Toaster } from '#/components/ui/sonner'
 import { TooltipProvider } from '#/components/ui/tooltip'
+import { BottomNav } from '#/components/layout/BottomNav'
 import { signIn, signOut } from '#/lib/auth-client'
 import { getSession } from '#/server/auth'
 import { getUserStats } from '#/server/progress'
@@ -65,7 +66,8 @@ function RootLayout() {
 
   return (
     <>
-      <header className="border-border bg-card sticky top-0 z-50 flex h-12 items-center gap-4 border-b px-4">
+      {/* Desktop header — hidden on mobile */}
+      <header className="border-border bg-card sticky top-0 z-50 hidden h-12 items-center gap-4 border-b px-4 md:flex">
         <Link to="/" className="flex items-center gap-2">
           <div className="bg-primary flex h-6 w-6 items-center justify-center rounded-md">
             <Terminal className="text-primary-foreground h-3.5 w-3.5" />
@@ -77,12 +79,32 @@ function RootLayout() {
 
         <div className="ml-auto flex items-center gap-2">
           {user && (
-            <Link
-              to="/dashboard"
-              className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-md px-3 py-1.5 text-sm transition-colors"
-            >
-              Dashboard
-            </Link>
+            <>
+              <Link
+                to="/dashboard"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-md px-3 py-1.5 text-sm transition-colors"
+              >
+                Home
+              </Link>
+              <Link
+                to="/"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-md px-3 py-1.5 text-sm transition-colors"
+              >
+                Katas
+              </Link>
+              <Link
+                to="/ranks"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-md px-3 py-1.5 text-sm transition-colors"
+              >
+                Ranks
+              </Link>
+              <Link
+                to="/profile"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-md px-3 py-1.5 text-sm transition-colors"
+              >
+                Profile
+              </Link>
+            </>
           )}
           {user?.role === 'admin' && (
             <Link
@@ -147,7 +169,47 @@ function RootLayout() {
           )}
         </div>
       </header>
-      <Outlet />
+
+      {/* Mobile header — shown only on mobile, slim with logo + sign in */}
+      <header className="border-border bg-card/95 sticky top-0 z-50 flex h-12 items-center justify-between border-b px-4 backdrop-blur-sm md:hidden">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="bg-primary flex h-6 w-6 items-center justify-center rounded-md">
+            <Terminal className="text-primary-foreground h-3.5 w-3.5" />
+          </div>
+          <span className="from-foreground to-primary bg-linear-to-r bg-clip-text font-semibold tracking-tight text-transparent">
+            dailykata
+          </span>
+        </Link>
+
+        <div className="flex items-center gap-2">
+          {user ? (
+            <>
+              <div className="rounded-full border border-orange-900/50 bg-linear-to-r from-orange-950 to-red-950 px-2.5 py-0.5 text-xs font-bold text-amber-400">
+                🔥 {currentStreak}
+              </div>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-sky-600 to-violet-500 text-xs font-bold text-white">
+                {user.name?.[0]?.toUpperCase() ?? user.email[0].toUpperCase()}
+              </div>
+            </>
+          ) : (
+            <Button
+              size="sm"
+              onClick={() =>
+                signIn.social({ provider: 'github', callbackURL: window.location.pathname })
+              }
+            >
+              Sign in
+            </Button>
+          )}
+        </div>
+      </header>
+
+      {/* Page content — add bottom padding on mobile for bottom nav */}
+      <div className="pb-16 md:pb-0">
+        <Outlet />
+      </div>
+
+      {user && <BottomNav />}
     </>
   )
 }

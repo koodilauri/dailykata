@@ -1,7 +1,9 @@
 'use client'
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '#/components/ui/resizable'
+import { useIsMobile } from '#/hooks/use-mobile'
 import { runTests, type TestResult } from '#/lib/runner'
+import { cn } from '#/lib/utils'
 import { useEffect, useRef, useState } from 'react'
 import { AchievementToast } from './AchievementToast'
 import { CodeEditor, type CodeEditorHandle } from './CodeEditor'
@@ -28,13 +30,17 @@ interface Props {
 
 const PENDING_SUBMIT_KEY = 'dailykata_pending_submit'
 
+type MobileTab = 'description' | 'code' | 'results'
+
 export function KataEditor({ kata, katas }: Props) {
+  const isMobile = useIsMobile()
   const editorRef = useRef<CodeEditorHandle>(null)
   const [results, setResults] = useState<TestResult[] | null>(null)
   const [running, setRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
   const [showAchievement, setShowAchievement] = useState(false)
+  const [mobileTab, setMobileTab] = useState<MobileTab>('description')
 
   useEffect(() => {
     const pending = localStorage.getItem(PENDING_SUBMIT_KEY)
@@ -73,6 +79,7 @@ export function KataEditor({ kata, katas }: Props) {
     setRunning(true)
     setResults(null)
     setError(null)
+    if (isMobile) setMobileTab('results')
     try {
       const res = await runTests(code, kata.tests)
       setResults(res)
@@ -84,44 +91,96 @@ export function KataEditor({ kata, katas }: Props) {
     }
   }
 
+  const mobileTabs: { id: MobileTab; label: string }[] = [
+    { id: 'description', label: 'Description' },
+    { id: 'code', label: 'Code' },
+    {
+      id: 'results',
+      label: results
+        ? `Results ${results.filter(r => r.passed).length}/${results.length}`
+        : 'Results'
+    }
+  ]
+
   return (
     <div className="flex h-full flex-1 flex-col">
       <KataBar kata={kata} katas={katas} running={running} onRun={handleRun} />
 
-      <ResizablePanelGroup orientation="horizontal" className="flex-1 overflow-hidden">
-        <ResizablePanel defaultSize={30} minSize={20}>
-          <DescriptionPanel kata={kata} />
-        </ResizablePanel>
-
-        <ResizableHandle withHandle />
-
-        <ResizablePanel defaultSize={40} minSize={25}>
-          <div className="flex h-full flex-col">
-            <div className="border-border bg-secondary flex h-10 shrink-0 items-center border-b px-4">
-              <span className="bg-accent rounded-md px-3 py-1 text-xs font-medium">
-                solution.ts
-              </span>
-            </div>
-            <CodeEditor ref={editorRef} initialCode={kata.starterCode} />
+      {isMobile ? (
+        /* ── Mobile: tab-based layout ── */
+        <>
+          <div className="border-border bg-secondary flex shrink-0 border-b">
+            {mobileTabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setMobileTab(tab.id)}
+                className={cn(
+                  'flex-1 border-b-2 py-2.5 text-xs font-semibold transition-colors',
+                  mobileTab === tab.id
+                    ? 'border-sky-500 text-sky-400'
+                    : 'text-muted-foreground border-transparent'
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-        </ResizablePanel>
 
-        <ResizableHandle withHandle />
-
-        <ResizablePanel defaultSize={30} minSize={20}>
-          <div className="flex h-full flex-col">
-            <div className="border-border bg-secondary flex h-10 shrink-0 items-center border-b px-4">
-              <span className="bg-accent rounded-md px-3 py-1 text-xs font-medium">Results</span>
-            </div>
-            <div className="flex flex-1 flex-col overflow-hidden">
-              <TestResults results={results} running={running} error={error} />
-            </div>
+          <div className="flex-1 overflow-hidden">
+            {mobileTab === 'description' && <DescriptionPanel key={kata.id} kata={kata} />}
+            {mobileTab === 'code' && (
+              <div className="flex h-full flex-col">
+                <div className="border-border bg-secondary flex h-9 shrink-0 items-center border-b px-3">
+                  <span className="bg-accent rounded px-2.5 py-0.5 text-xs font-medium">
+                    solution.ts
+                  </span>
+                </div>
+                <CodeEditor ref={editorRef} initialCode={kata.starterCode} />
+              </div>
+            )}
+            {mobileTab === 'results' && (
+              <div className="flex h-full flex-col overflow-hidden">
+                <TestResults results={results} running={running} error={error} />
+              </div>
+            )}
           </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+        </>
+      ) : (
+        /* ── Desktop: resizable 3-panel layout ── */
+        <ResizablePanelGroup orientation="horizontal" className="flex-1 overflow-hidden">
+          <ResizablePanel defaultSize={30} minSize={20}>
+            <DescriptionPanel key={kata.id} kata={kata} />
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          <ResizablePanel defaultSize={40} minSize={25}>
+            <div className="flex h-full flex-col">
+              <div className="border-border bg-secondary flex h-10 shrink-0 items-center border-b px-4">
+                <span className="bg-accent rounded-md px-3 py-1 text-xs font-medium">
+                  solution.ts
+                </span>
+              </div>
+              <CodeEditor ref={editorRef} initialCode={kata.starterCode} />
+            </div>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          <ResizablePanel defaultSize={30} minSize={20}>
+            <div className="flex h-full flex-col">
+              <div className="border-border bg-secondary flex h-10 shrink-0 items-center border-b px-4">
+                <span className="bg-accent rounded-md px-3 py-1 text-xs font-medium">Results</span>
+              </div>
+              <div className="flex flex-1 flex-col overflow-hidden">
+                <TestResults results={results} running={running} error={error} />
+              </div>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      )}
 
       <AchievementToast show={showAchievement} kataTitle={kata.title} />
-
       <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} kataId={kata.id} />
     </div>
   )
