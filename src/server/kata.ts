@@ -2,6 +2,7 @@ import { kata } from '#/db/schema'
 import { createAuth } from '#/lib/auth'
 import { createDb } from '#/lib/db'
 import { logger } from '#/lib/logger'
+import { KataIdSchema, KataInputSchema, TogglePublishSchema, UpdateKataSchema } from '#/lib/schemas'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { eq } from 'drizzle-orm'
@@ -9,7 +10,7 @@ import { eq } from 'drizzle-orm'
 const log = logger.withTag('kata')
 
 export const getKata = createServerFn({ method: 'GET' })
-  .inputValidator((d: { kataId: string }) => d)
+  .inputValidator(d => KataIdSchema.parse(d))
   .handler(async ({ data }) => {
     log.debug('getKata', { kataId: data.kataId })
     const db = createDb()
@@ -47,19 +48,8 @@ export const getAllKatas = createServerFn({ method: 'GET' }).handler(async () =>
   return db.query.kata.findMany({ orderBy: (k, { asc }) => asc(k.order) })
 })
 
-type KataInput = {
-  title: string
-  description: string
-  starterCode: string
-  tests: string
-  hints: string[]
-  difficulty: 'easy' | 'medium' | 'hard'
-  order: number
-  published: boolean
-}
-
 export const createKata = createServerFn({ method: 'POST' })
-  .inputValidator((d: KataInput) => d)
+  .inputValidator(d => KataInputSchema.parse(d))
   .handler(async ({ data }) => {
     await requireAdmin()
     const db = createDb()
@@ -69,7 +59,7 @@ export const createKata = createServerFn({ method: 'POST' })
   })
 
 export const updateKata = createServerFn({ method: 'POST' })
-  .inputValidator((d: { id: string } & KataInput) => d)
+  .inputValidator(d => UpdateKataSchema.parse(d))
   .handler(async ({ data }) => {
     await requireAdmin()
     const { id, ...fields } = data
@@ -79,7 +69,7 @@ export const updateKata = createServerFn({ method: 'POST' })
   })
 
 export const togglePublish = createServerFn({ method: 'POST' })
-  .inputValidator((d: { id: string; published: boolean }) => d)
+  .inputValidator(d => TogglePublishSchema.parse(d))
   .handler(async ({ data }) => {
     await requireAdmin()
     const db = createDb()
@@ -88,7 +78,7 @@ export const togglePublish = createServerFn({ method: 'POST' })
   })
 
 export const getKataForAdmin = createServerFn({ method: 'GET' })
-  .inputValidator((d: { kataId: string }) => d)
+  .inputValidator(d => KataIdSchema.parse(d))
   .handler(async ({ data }) => {
     await requireAdmin()
     log.debug('getKataForAdmin', { kataId: data.kataId })

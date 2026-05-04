@@ -2,6 +2,7 @@ import { submission, userProgress, userStats, xpEvent } from '#/db/schema'
 import { createAuth } from '#/lib/auth'
 import { createDb } from '#/lib/db'
 import { logger } from '#/lib/logger'
+import { KataIdSchema, SubmitKataSchema } from '#/lib/schemas'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { and, eq, sql } from 'drizzle-orm'
@@ -11,7 +12,7 @@ const log = logger.withTag('submission')
 const XP_PER_KATA = 100
 
 export const submitKata = createServerFn({ method: 'POST' })
-  .inputValidator((d: { kataId: string; code: string; passed: boolean }) => d)
+  .inputValidator(d => SubmitKataSchema.parse(d))
   .handler(async ({ data }) => {
     const request = getRequest()
     const session = await createAuth().api.getSession({ headers: request.headers })
@@ -86,7 +87,7 @@ export const submitKata = createServerFn({ method: 'POST' })
   })
 
 export const getKataSubmissions = createServerFn({ method: 'GET' })
-  .inputValidator((d: { kataId: string }) => d)
+  .inputValidator(d => KataIdSchema.parse(d))
   .handler(async ({ data }) => {
     const request = getRequest()
     const session = await createAuth().api.getSession({ headers: request.headers })
