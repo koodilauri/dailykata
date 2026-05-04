@@ -1,7 +1,13 @@
+'use client'
+
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
-import { useState } from 'react'
+import { CodeEditor, type CodeEditorHandle } from '#/components/editor/CodeEditor'
+import { TestResults } from '#/components/editor/TestResults'
+import { runTests, type TestResult } from '#/lib/runner'
+import { Play } from 'lucide-react'
+import { useRef, useState } from 'react'
 
 export interface KataFormData {
   title: string
@@ -34,6 +40,11 @@ export function KataForm({ initial, onSubmit, submitLabel }: KataFormProps) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const solutionRef = useRef<CodeEditorHandle>(null)
+  const [testResults, setTestResults] = useState<TestResult[] | null>(null)
+  const [testRunning, setTestRunning] = useState(false)
+  const [testError, setTestError] = useState<string | null>(null)
+
   function set<K extends keyof KataFormData>(key: K, value: KataFormData[K]) {
     setForm(f => ({ ...f, [key]: value }))
   }
@@ -48,6 +59,21 @@ export function KataForm({ initial, onSubmit, submitLabel }: KataFormProps) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleRunTests() {
+    const code = solutionRef.current?.getValue() ?? ''
+    setTestRunning(true)
+    setTestResults(null)
+    setTestError(null)
+    try {
+      const results = await runTests(code, form.tests)
+      setTestResults(results)
+    } catch (e) {
+      setTestError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setTestRunning(false)
     }
   }
 
@@ -67,22 +93,48 @@ export function KataForm({ initial, onSubmit, submitLabel }: KataFormProps) {
       </Field>
 
       <Field label="Starter code (TypeScript)">
-        <textarea
-          className="border-input bg-background focus-visible:ring-ring min-h-24 w-full rounded-md border px-3 py-2 font-mono text-sm focus-visible:ring-1 focus-visible:outline-none"
-          value={form.starterCode}
-          onChange={e => set('starterCode', e.target.value)}
-          required
-        />
+        <div className="border-input h-40 overflow-hidden rounded-md border">
+          <CodeEditor initialCode={form.starterCode} onChange={v => set('starterCode', v)} />
+        </div>
       </Field>
 
       <Field label="Tests (hidden from user — use test() / expect() format)">
-        <textarea
-          className="border-input bg-background focus-visible:ring-ring min-h-32 w-full rounded-md border px-3 py-2 font-mono text-sm focus-visible:ring-1 focus-visible:outline-none"
-          value={form.tests}
-          onChange={e => set('tests', e.target.value)}
-          required
-        />
+        <div className="border-input h-48 overflow-hidden rounded-md border">
+          <CodeEditor initialCode={form.tests} onChange={v => set('tests', v)} />
+        </div>
       </Field>
+
+      {/* Test runner */}
+      <div className="flex flex-col gap-3 rounded-xl border border-dashed p-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">Test your kata</span>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={handleRunTests}
+            disabled={testRunning}
+            className="gap-1.5"
+          >
+            <Play className="h-3.5 w-3.5" />
+            {testRunning ? 'Running…' : 'Run Tests'}
+          </Button>
+        </div>
+        <p className="text-muted-foreground -mt-1 text-xs">
+          Write a reference solution below to verify your tests pass.
+        </p>
+        <div className="border-input h-40 overflow-hidden rounded-md border">
+          <CodeEditor
+            ref={solutionRef}
+            initialCode={initial?.starterCode ?? '// Write a reference solution here\n'}
+          />
+        </div>
+        {(testResults !== null || testError !== null) && (
+          <div className="max-h-64 overflow-auto rounded-md border">
+            <TestResults results={testResults} running={testRunning} error={testError} />
+          </div>
+        )}
+      </div>
 
       <Field label="Hints (one per line)">
         <textarea

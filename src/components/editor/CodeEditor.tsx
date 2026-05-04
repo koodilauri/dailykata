@@ -11,14 +11,17 @@ export interface CodeEditorHandle {
 
 interface Props {
   initialCode: string
+  onChange?: (value: string) => void
 }
 
 export const CodeEditor = forwardRef<CodeEditorHandle, Props>(function CodeEditor(
-  { initialCode },
+  { initialCode, onChange },
   ref
 ) {
   const containerRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
 
   useImperativeHandle(ref, () => ({
     getValue: () => viewRef.current?.state.doc.toString() ?? ''
@@ -28,7 +31,14 @@ export const CodeEditor = forwardRef<CodeEditorHandle, Props>(function CodeEdito
     if (!containerRef.current) return
     const view = new EditorView({
       doc: initialCode,
-      extensions: [basicSetup, javascript({ typescript: true }), oneDark],
+      extensions: [
+        basicSetup,
+        javascript({ typescript: true }),
+        oneDark,
+        EditorView.updateListener.of(update => {
+          if (update.docChanged) onChangeRef.current?.(update.state.doc.toString())
+        })
+      ],
       parent: containerRef.current
     })
     viewRef.current = view
