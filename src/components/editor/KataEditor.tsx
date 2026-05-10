@@ -5,6 +5,7 @@ import { useIsMobile } from '#/hooks/use-mobile'
 import { runTests, type TestResult } from '#/lib/runner'
 import { cn } from '#/lib/utils'
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from '@tanstack/react-router'
 import { AchievementToast } from './AchievementToast'
 import { CodeEditor, type CodeEditorHandle } from './CodeEditor'
 import { DescriptionPanel } from './DescriptionPanel'
@@ -33,6 +34,7 @@ const PENDING_SUBMIT_KEY = 'dailykata_pending_submit'
 type MobileTab = 'description' | 'code' | 'results'
 
 export function KataEditor({ kata, katas }: Props) {
+  const router = useRouter()
   const isMobile = useIsMobile()
   const editorRef = useRef<CodeEditorHandle>(null)
   const [results, setResults] = useState<TestResult[] | null>(null)
@@ -66,9 +68,12 @@ export function KataEditor({ kata, katas }: Props) {
 
     if (res.ok) {
       const data = (await res.json()) as { requiresAuth: boolean; xpEarned?: number }
-      if (!data.requiresAuth && data.xpEarned && data.xpEarned > 0) {
-        setShowAchievement(true)
-        setTimeout(() => setShowAchievement(false), 4000)
+      if (!data.requiresAuth) {
+        void router.invalidate()
+        if (data.xpEarned && data.xpEarned > 0) {
+          setShowAchievement(true)
+          setTimeout(() => setShowAchievement(false), 4000)
+        }
       }
     }
   }
