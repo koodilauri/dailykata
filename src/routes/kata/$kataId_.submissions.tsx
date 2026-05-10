@@ -32,11 +32,12 @@ function SubmissionsPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <Link
-        to="/dashboard"
+        to="/kata/$kataId"
+        params={{ kataId: kata.id }}
         className="text-muted-foreground hover:text-foreground mb-6 flex items-center gap-1 text-sm transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to dashboard
+        Back to {kata.title}
       </Link>
 
       <div className="mb-8">
