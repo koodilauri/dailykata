@@ -30,7 +30,7 @@ function KataPage() {
       <div className="hidden md:flex">
         <KataSidebar katas={katas} completedIds={completedIds} activeId={kata.id} />
       </div>
-      <KataEditor kata={kata} katas={katas} />
+      <KataEditor key={kata.id} kata={kata} katas={katas} />
     </div>
   )
 }

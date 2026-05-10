@@ -13,6 +13,8 @@ import { KataBar } from './KataBar'
 import { LoginDialog } from './LoginDialog'
 import { TestResults } from './TestResults'
 
+const draftKey = (kataId: string) => `kata_draft_${kataId}`
+
 interface Kata {
   id: string
   title: string
@@ -37,12 +39,26 @@ export function KataEditor({ kata, katas }: Props) {
   const router = useRouter()
   const isMobile = useIsMobile()
   const editorRef = useRef<CodeEditorHandle>(null)
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [results, setResults] = useState<TestResult[] | null>(null)
   const [running, setRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
   const [showAchievement, setShowAchievement] = useState(false)
   const [mobileTab, setMobileTab] = useState<MobileTab>('description')
+  const [initialCode] = useState(() => localStorage.getItem(draftKey(kata.id)) ?? kata.starterCode)
+
+  function handleCodeChange(code: string) {
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => localStorage.setItem(draftKey(kata.id), code), 500)
+  }
+
+  useEffect(
+    () => () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current)
+    },
+    []
+  )
 
   useEffect(() => {
     const pending = localStorage.getItem(PENDING_SUBMIT_KEY)
@@ -140,7 +156,7 @@ export function KataEditor({ kata, katas }: Props) {
                     solution.ts
                   </span>
                 </div>
-                <CodeEditor ref={editorRef} initialCode={kata.starterCode} />
+                <CodeEditor ref={editorRef} initialCode={initialCode} onChange={handleCodeChange} />
               </div>
             )}
             {mobileTab === 'results' && (
@@ -166,7 +182,7 @@ export function KataEditor({ kata, katas }: Props) {
                   solution.ts
                 </span>
               </div>
-              <CodeEditor ref={editorRef} initialCode={kata.starterCode} />
+              <CodeEditor ref={editorRef} initialCode={initialCode} onChange={handleCodeChange} />
             </div>
           </ResizablePanel>
 
