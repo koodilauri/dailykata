@@ -1,4 +1,4 @@
-import { kata, user, userProgress, userStats } from '#/db/schema'
+import { kata, user, userProgress, userStats, xpEvent } from '#/db/schema'
 import { createAuth } from '#/lib/auth'
 import { createDb } from '#/lib/db'
 import { logger } from '#/lib/logger'
@@ -39,6 +39,35 @@ export const getUserProgress = createServerFn({ method: 'GET' }).handler(async (
     .innerJoin(kata, eq(userProgress.kataId, kata.id))
     .where(and(eq(userProgress.userId, session.user.id), eq(userProgress.completed, true)))
     .orderBy(asc(kata.order))
+})
+
+export const getNextKata = createServerFn({ method: 'GET' }).handler(async () => {
+  const request = getRequest()
+  const session = await createAuth().api.getSession({ headers: request.headers })
+  if (!session) return null
+  const db = createDb()
+  const completed = await db
+    .select({ kataId: userProgress.kataId })
+    .from(userProgress)
+    .where(and(eq(userProgress.userId, session.user.id), eq(userProgress.completed, true)))
+  const completedSet = new Set(completed.map(r => r.kataId))
+  const katas = await db.query.kata.findMany({
+    where: (k, { eq }) => eq(k.published, true),
+    orderBy: (k, { asc }) => asc(k.order),
+    columns: { id: true, title: true }
+  })
+  return katas.find(k => !completedSet.has(k.id)) ?? null
+})
+
+export const deleteAccount = createServerFn({ method: 'POST' }).handler(async () => {
+  const request = getRequest()
+  const auth = createAuth()
+  const session = await auth.api.getSession({ headers: request.headers })
+  if (!session) throw new Error('Unauthorized')
+  const db = createDb()
+  await db.delete(xpEvent).where(eq(xpEvent.userId, session.user.id))
+  await db.delete(userStats).where(eq(userStats.userId, session.user.id))
+  await auth.api.deleteUser({ headers: request.headers, body: {} })
 })
 
 export const getRanks = createServerFn({ method: 'GET' }).handler(async () => {

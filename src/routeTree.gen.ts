@@ -9,9 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RanksRouteImport } from './routes/ranks'
-import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as KataKataIdRouteImport } from './routes/kata/$kataId'
@@ -24,19 +23,14 @@ import { Route as AdminKataIdEditRouteImport } from './routes/admin/$kataId.edit
 import { Route as ApiAdminKatasIndexRouteImport } from './routes/api/admin/katas/index'
 import { Route as ApiAdminKatasKataIdRouteImport } from './routes/api/admin/katas/$kataId'
 
-const RanksRoute = RanksRouteImport.update({
-  id: '/ranks',
-  path: '/ranks',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -97,9 +91,8 @@ const ApiAdminKatasKataIdRoute = ApiAdminKatasKataIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/dashboard': typeof DashboardRoute
-  '/profile': typeof ProfileRoute
-  '/ranks': typeof RanksRoute
   '/admin/new': typeof AdminNewRoute
   '/kata/$kataId': typeof KataKataIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -113,9 +106,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/dashboard': typeof DashboardRoute
-  '/profile': typeof ProfileRoute
-  '/ranks': typeof RanksRoute
   '/admin/new': typeof AdminNewRoute
   '/kata/$kataId': typeof KataKataIdRoute
   '/admin': typeof AdminIndexRoute
@@ -130,9 +122,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/dashboard': typeof DashboardRoute
-  '/profile': typeof ProfileRoute
-  '/ranks': typeof RanksRoute
   '/admin/new': typeof AdminNewRoute
   '/kata/$kataId': typeof KataKataIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -148,9 +139,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
     | '/dashboard'
-    | '/profile'
-    | '/ranks'
     | '/admin/new'
     | '/kata/$kataId'
     | '/admin/'
@@ -164,9 +154,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
     | '/dashboard'
-    | '/profile'
-    | '/ranks'
     | '/admin/new'
     | '/kata/$kataId'
     | '/admin'
@@ -180,9 +169,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account'
     | '/dashboard'
-    | '/profile'
-    | '/ranks'
     | '/admin/new'
     | '/kata/$kataId'
     | '/admin/'
@@ -197,9 +185,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
   DashboardRoute: typeof DashboardRoute
-  ProfileRoute: typeof ProfileRoute
-  RanksRoute: typeof RanksRoute
   AdminNewRoute: typeof AdminNewRoute
   KataKataIdRoute: typeof KataKataIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -214,25 +201,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/ranks': {
-      id: '/ranks'
-      path: '/ranks'
-      fullPath: '/ranks'
-      preLoaderRoute: typeof RanksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -317,9 +297,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
   DashboardRoute: DashboardRoute,
-  ProfileRoute: ProfileRoute,
-  RanksRoute: RanksRoute,
   AdminNewRoute: AdminNewRoute,
   KataKataIdRoute: KataKataIdRoute,
   AdminIndexRoute: AdminIndexRoute,

@@ -2,51 +2,97 @@
 
 import { cn } from '#/lib/utils'
 import { Link, useRouterState } from '@tanstack/react-router'
-import { Home, ScrollText, Trophy, User } from 'lucide-react'
+import { Home, ScrollText, PlayCircle, User } from 'lucide-react'
 
-const tabs = [
-  { to: '/dashboard', label: 'Home', Icon: Home },
-  { to: '/', label: 'Katas', Icon: ScrollText },
-  { to: '/ranks', label: 'Ranks', Icon: Trophy },
-  { to: '/profile', label: 'Profile', Icon: User }
-] as const
+type NavTabProps = {
+  to: string
+  label: string
+  Icon: React.ComponentType<{ className?: string }>
+  active: boolean
+}
 
-export function BottomNav() {
+function NavTab({ to, label, Icon, active }: NavTabProps) {
+  return (
+    <Link to={to} className="flex flex-1 flex-col items-center gap-0.5">
+      <div
+        className={cn(
+          'flex h-8 w-8 items-center justify-center rounded-xl transition-colors',
+          active ? 'bg-sky-500/15' : 'bg-transparent'
+        )}
+      >
+        <Icon
+          className={cn(
+            'h-5 w-5 transition-colors',
+            active ? 'text-sky-400' : 'text-muted-foreground'
+          )}
+        />
+      </div>
+      <span
+        className={cn(
+          'text-[10px] font-semibold tracking-wide transition-colors',
+          active ? 'text-sky-400' : 'text-muted-foreground'
+        )}
+      >
+        {label}
+      </span>
+    </Link>
+  )
+}
+
+export function BottomNav({ nextKataId }: { nextKataId: string | null }) {
   const pathname = useRouterState({ select: s => s.location.pathname })
 
   // Hide on kata editor pages (give editor full screen)
   if (pathname.startsWith('/kata/')) return null
 
+  const continueActive = pathname.startsWith('/kata/')
+
   return (
     <nav className="border-border bg-card/95 fixed right-0 bottom-0 left-0 z-50 flex h-16 items-start justify-around border-t pt-2 backdrop-blur-sm md:hidden">
-      {tabs.map(({ to, label, Icon }) => {
-        const active = to === '/' ? pathname === '/' : pathname.startsWith(to)
-        return (
-          <Link key={to} to={to} className="flex flex-1 flex-col items-center gap-0.5">
-            <div
+      <NavTab to="/dashboard" label="Home" Icon={Home} active={pathname.startsWith('/dashboard')} />
+      <NavTab to="/" label="Katas" Icon={ScrollText} active={pathname === '/'} />
+
+      {/* Continue tab — dynamic link or dimmed placeholder */}
+      {nextKataId ? (
+        <Link
+          to="/kata/$kataId"
+          params={{ kataId: nextKataId }}
+          className="flex flex-1 flex-col items-center gap-0.5"
+        >
+          <div
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-xl transition-colors',
+              continueActive ? 'bg-sky-500/15' : 'bg-transparent'
+            )}
+          >
+            <PlayCircle
               className={cn(
-                'flex h-8 w-8 items-center justify-center rounded-xl transition-colors',
-                active ? 'bg-sky-500/15' : 'bg-transparent'
+                'h-5 w-5 transition-colors',
+                continueActive ? 'text-sky-400' : 'text-muted-foreground'
               )}
-            >
-              <Icon
-                className={cn(
-                  'h-5 w-5 transition-colors',
-                  active ? 'text-sky-400' : 'text-muted-foreground'
-                )}
-              />
-            </div>
-            <span
-              className={cn(
-                'text-[10px] font-semibold tracking-wide transition-colors',
-                active ? 'text-sky-400' : 'text-muted-foreground'
-              )}
-            >
-              {label}
-            </span>
-          </Link>
-        )
-      })}
+            />
+          </div>
+          <span
+            className={cn(
+              'text-[10px] font-semibold tracking-wide transition-colors',
+              continueActive ? 'text-sky-400' : 'text-muted-foreground'
+            )}
+          >
+            Continue
+          </span>
+        </Link>
+      ) : (
+        <div className="flex flex-1 flex-col items-center gap-0.5 opacity-30">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl">
+            <PlayCircle className="text-muted-foreground h-5 w-5" />
+          </div>
+          <span className="text-muted-foreground text-[10px] font-semibold tracking-wide">
+            Continue
+          </span>
+        </div>
+      )}
+
+      <NavTab to="/account" label="Account" Icon={User} active={pathname.startsWith('/account')} />
     </nav>
   )
 }

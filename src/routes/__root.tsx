@@ -1,10 +1,17 @@
 import { Button } from '#/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '#/components/ui/dropdown-menu'
 import { Toaster } from '#/components/ui/sonner'
 import { TooltipProvider } from '#/components/ui/tooltip'
 import { BottomNav } from '#/components/layout/BottomNav'
 import { signIn, signOut } from '#/lib/auth-client'
 import { getSession } from '#/server/auth'
-import { getUserStats } from '#/server/progress'
+import { getNextKata, getUserStats } from '#/server/progress'
 import { createRootRoute, HeadContent, Link, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -16,8 +23,12 @@ const XP_PER_LEVEL = 500
 
 export const Route = createRootRoute({
   loader: async () => {
-    const [session, stats] = await Promise.all([getSession(), getUserStats()])
-    return { session, stats }
+    const [session, stats, nextKata] = await Promise.all([
+      getSession(),
+      getUserStats(),
+      getNextKata()
+    ])
+    return { session, stats, nextKata }
   },
   head: () => ({
     meta: [
@@ -53,7 +64,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 }
 
 function RootLayout() {
-  const { session, stats } = Route.useLoaderData()
+  const { session, stats, nextKata } = Route.useLoaderData()
   const user = session?.user as
     | { role?: string; name?: string | null; email: string; image?: string | null }
     | undefined
@@ -68,7 +79,7 @@ function RootLayout() {
     <>
       {/* Desktop header — hidden on mobile */}
       <header className="border-border bg-card sticky top-0 z-50 hidden h-12 items-center gap-4 border-b px-4 md:flex">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/dashboard" className="flex items-center gap-2">
           <div className="bg-primary flex h-6 w-6 items-center justify-center rounded-md">
             <Terminal className="text-primary-foreground h-3.5 w-3.5" />
           </div>
@@ -81,38 +92,21 @@ function RootLayout() {
           {user && (
             <>
               <Link
-                to="/dashboard"
-                className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-md px-3 py-1.5 text-sm transition-colors"
-              >
-                Home
-              </Link>
-              <Link
                 to="/"
                 className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-md px-3 py-1.5 text-sm transition-colors"
               >
                 Katas
               </Link>
-              <Link
-                to="/ranks"
-                className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-md px-3 py-1.5 text-sm transition-colors"
-              >
-                Ranks
-              </Link>
-              <Link
-                to="/profile"
-                className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-md px-3 py-1.5 text-sm transition-colors"
-              >
-                Profile
-              </Link>
+              {nextKata && (
+                <Link
+                  to="/kata/$kataId"
+                  params={{ kataId: nextKata.id }}
+                  className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-md px-3 py-1.5 text-sm transition-colors"
+                >
+                  Continue
+                </Link>
+              )}
             </>
-          )}
-          {user?.role === 'admin' && (
-            <Link
-              to="/admin"
-              className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-md px-3 py-1.5 text-sm transition-colors"
-            >
-              Admin
-            </Link>
           )}
 
           {user && (
@@ -138,25 +132,35 @@ function RootLayout() {
                 🔥 {currentStreak}
               </div>
 
-              {/* Avatar */}
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-sky-600 to-violet-500 text-xs font-bold text-white">
-                {user.name?.[0]?.toUpperCase() ?? user.email[0].toUpperCase()}
-              </div>
+              {/* Avatar dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-linear-to-br from-sky-600 to-violet-500 text-xs font-bold text-white outline-none">
+                  {user.name?.[0]?.toUpperCase() ?? user.email[0].toUpperCase()}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="text-muted-foreground truncate px-1.5 py-1 text-xs font-medium">
+                    {user.name ?? user.email}
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem render={<Link to="/account" />}>Account</DropdownMenuItem>
+                  {user.role === 'admin' && (
+                    <DropdownMenuItem render={<Link to="/admin" />}>Admin</DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() =>
+                      signOut({ fetchOptions: { onSuccess: () => window.location.assign('/') } })
+                    }
+                  >
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           )}
 
-          {session ? (
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-border ml-1"
-              onClick={() =>
-                signOut({ fetchOptions: { onSuccess: () => window.location.assign('/') } })
-              }
-            >
-              Sign out
-            </Button>
-          ) : (
+          {!session && (
             <Button
               size="sm"
               className="ml-1"
@@ -172,7 +176,7 @@ function RootLayout() {
 
       {/* Mobile header — shown only on mobile, slim with logo + sign in */}
       <header className="border-border bg-card/95 sticky top-0 z-50 flex h-12 items-center justify-between border-b px-4 backdrop-blur-sm md:hidden">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/dashboard" className="flex items-center gap-2">
           <div className="bg-primary flex h-6 w-6 items-center justify-center rounded-md">
             <Terminal className="text-primary-foreground h-3.5 w-3.5" />
           </div>
@@ -209,7 +213,7 @@ function RootLayout() {
         <Outlet />
       </div>
 
-      {user && <BottomNav />}
+      {user && <BottomNav nextKataId={nextKata?.id ?? null} />}
     </>
   )
 }
