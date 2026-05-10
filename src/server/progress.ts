@@ -1,4 +1,4 @@
-import { kata, user, userProgress, userStats, xpEvent } from '#/db/schema'
+import { kata, section, user, userProgress, userStats, xpEvent } from '#/db/schema'
 import { createAuth } from '#/lib/auth'
 import { createDb } from '#/lib/db'
 import { logger } from '#/lib/logger'
@@ -37,8 +37,9 @@ export const getUserProgress = createServerFn({ method: 'GET' }).handler(async (
     })
     .from(userProgress)
     .innerJoin(kata, eq(userProgress.kataId, kata.id))
+    .leftJoin(section, eq(kata.sectionId, section.id))
     .where(and(eq(userProgress.userId, session.user.id), eq(userProgress.completed, true)))
-    .orderBy(asc(kata.order))
+    .orderBy(asc(section.order), asc(kata.order))
 })
 
 export const getNextKata = createServerFn({ method: 'GET' }).handler(async () => {
@@ -51,11 +52,12 @@ export const getNextKata = createServerFn({ method: 'GET' }).handler(async () =>
     .from(userProgress)
     .where(and(eq(userProgress.userId, session.user.id), eq(userProgress.completed, true)))
   const completedSet = new Set(completed.map(r => r.kataId))
-  const katas = await db.query.kata.findMany({
-    where: (k, { eq }) => eq(k.published, true),
-    orderBy: (k, { asc }) => asc(k.order),
-    columns: { id: true, title: true }
-  })
+  const katas = await db
+    .select({ id: kata.id, title: kata.title })
+    .from(kata)
+    .leftJoin(section, eq(kata.sectionId, section.id))
+    .where(eq(kata.published, true))
+    .orderBy(asc(section.order), asc(kata.order))
   return katas.find(k => !completedSet.has(k.id)) ?? null
 })
 

@@ -3,6 +3,12 @@ import { user } from './auth'
 
 export const difficultyEnum = pgEnum('difficulty', ['easy', 'medium', 'hard'])
 
+export const section = pgTable('section', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  order: integer('order').notNull()
+})
+
 export const kata = pgTable('kata', {
   id: text('id')
     .primaryKey()
@@ -14,6 +20,7 @@ export const kata = pgTable('kata', {
   hints: text('hints').array(),
   difficulty: difficultyEnum('difficulty').notNull().default('easy'),
   order: integer('order').notNull(),
+  sectionId: text('section_id').references(() => section.id, { onDelete: 'set null' }),
   published: boolean('published').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow()
 })

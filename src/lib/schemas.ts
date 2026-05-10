@@ -1,11 +1,11 @@
 import { z } from 'zod'
 
 export const KataIdSchema = z.object({
-  kataId: z.string().uuid()
+  kataId: z.string().min(1)
 })
 
 export const SubmitKataSchema = z.object({
-  kataId: z.string().uuid(),
+  kataId: z.string().min(1),
   code: z.string().min(1).max(100_000),
   passed: z.boolean()
 })
@@ -22,11 +22,11 @@ export const KataInputSchema = z.object({
 })
 
 export const UpdateKataSchema = KataInputSchema.extend({
-  id: z.string().uuid()
+  id: z.string().min(1)
 })
 
 export const TogglePublishSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().min(1),
   published: z.boolean()
 })
 

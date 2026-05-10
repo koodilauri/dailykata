@@ -1,19 +1,26 @@
 import { KataEditor } from '#/components/editor/KataEditor'
 import { KataSidebar } from '#/components/editor/KataSidebar'
 import { getUserProgress } from '#/server/progress'
-import { getKata, getKatas } from '#/server/kata'
+import { getKata, getKatasForSection, getNextSection } from '#/server/kata'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/kata/$kataId')({
   loader: async ({ params }) => {
-    const [kata, katas, progress] = await Promise.all([
-      getKata({ data: { kataId: params.kataId } }),
-      getKatas(),
+    const kata = await getKata({ data: { kataId: params.kataId } })
+    if (!kata) throw notFound()
+
+    const sectionId = kata.sectionId ?? null
+    const [sectionKatas, nextSection, progress] = await Promise.all([
+      sectionId ? getKatasForSection({ data: { sectionId } }) : Promise.resolve([]),
+      sectionId ? getNextSection({ data: { currentSectionId: sectionId } }) : Promise.resolve(null),
       getUserProgress()
     ])
-    if (!kata) throw notFound()
+
     const completedIds = progress.map(p => p.kataId)
-    return { kata, katas, completedIds }
+    const sectionComplete =
+      sectionKatas.length > 0 && sectionKatas.every(k => completedIds.includes(k.id))
+
+    return { kata, sectionKatas, nextSection, completedIds, sectionComplete, sectionId }
   },
   notFoundComponent: () => (
     <div className="text-muted-foreground flex h-screen items-center justify-center">
@@ -24,13 +31,21 @@ export const Route = createFileRoute('/kata/$kataId')({
 })
 
 function KataPage() {
-  const { kata, katas, completedIds } = Route.useLoaderData()
+  const { kata, sectionKatas, nextSection, completedIds, sectionComplete } = Route.useLoaderData()
+
   return (
     <div className="flex h-[calc(100vh-3rem)]">
       <div className="hidden md:flex">
-        <KataSidebar katas={katas} completedIds={completedIds} activeId={kata.id} />
+        <KataSidebar
+          katas={sectionKatas}
+          completedIds={completedIds}
+          activeId={kata.id}
+          sectionTitle={kata.sectionId ?? undefined}
+          sectionComplete={sectionComplete}
+          nextSection={nextSection}
+        />
       </div>
-      <KataEditor key={kata.id} kata={kata} katas={katas} />
+      <KataEditor key={kata.id} kata={kata} katas={sectionKatas} />
     </div>
   )
 }

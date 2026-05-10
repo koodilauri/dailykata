@@ -3,7 +3,7 @@
 import { ScrollArea } from '#/components/ui/scroll-area'
 import { cn } from '#/lib/utils'
 import { Link } from '@tanstack/react-router'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Trophy } from 'lucide-react'
 import { useState } from 'react'
 
 interface SidebarKata {
@@ -13,10 +13,19 @@ interface SidebarKata {
   order: number
 }
 
+interface NextSection {
+  id: string
+  title: string
+  firstKataId: string | null
+}
+
 interface Props {
   katas: SidebarKata[]
   completedIds: string[]
   activeId: string
+  sectionTitle?: string
+  sectionComplete?: boolean
+  nextSection?: NextSection | null
 }
 
 const difficultyDot: Record<SidebarKata['difficulty'], string> = {
@@ -25,7 +34,14 @@ const difficultyDot: Record<SidebarKata['difficulty'], string> = {
   hard: 'bg-red-500'
 }
 
-export function KataSidebar({ katas, completedIds, activeId }: Props) {
+export function KataSidebar({
+  katas,
+  completedIds,
+  activeId,
+  sectionTitle,
+  sectionComplete,
+  nextSection
+}: Props) {
   const [open, setOpen] = useState(true)
 
   return (
@@ -40,7 +56,16 @@ export function KataSidebar({ katas, completedIds, activeId }: Props) {
         className="border-border text-muted-foreground hover:text-foreground hover:bg-accent flex h-10 w-full shrink-0 items-center border-b px-2.5 transition-colors"
         aria-label={open ? 'Collapse sidebar' : 'Expand sidebar'}
       >
-        {open ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        {open ? (
+          <ChevronLeft className="h-4 w-4 shrink-0" />
+        ) : (
+          <ChevronRight className="h-4 w-4 shrink-0" />
+        )}
+        {open && sectionTitle && (
+          <span className="ml-2 truncate text-xs font-semibold tracking-wide capitalize">
+            {sectionTitle}
+          </span>
+        )}
       </button>
 
       {open && (
@@ -83,6 +108,32 @@ export function KataSidebar({ katas, completedIds, activeId }: Props) {
               )
             })}
           </ul>
+
+          {sectionComplete && (
+            <div className="mx-2 mb-3 rounded-xl border border-emerald-500/25 bg-emerald-500/8 p-3">
+              <div className="mb-1.5 flex items-center gap-1.5">
+                <Trophy className="h-3.5 w-3.5 text-emerald-400" />
+                <span className="text-xs font-bold text-emerald-400">Section Complete!</span>
+              </div>
+              {nextSection ? (
+                nextSection.firstKataId ? (
+                  <Link
+                    to="/kata/$kataId"
+                    params={{ kataId: nextSection.firstKataId }}
+                    className="mt-1 block rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-center text-xs font-semibold text-sky-400 transition-colors hover:border-sky-500/50 hover:bg-sky-500/15"
+                  >
+                    Start {nextSection.title} →
+                  </Link>
+                ) : (
+                  <p className="text-muted-foreground text-[11px]">Next: {nextSection.title}</p>
+                )
+              ) : (
+                <p className="text-[11px] font-medium text-emerald-300">
+                  You&apos;ve completed all sections!
+                </p>
+              )}
+            </div>
+          )}
         </ScrollArea>
       )}
     </div>
