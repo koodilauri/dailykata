@@ -1,10 +1,13 @@
 import { KataEditor } from '#/components/editor/KataEditor'
-import { KataSidebar } from '#/components/editor/KataSidebar'
+import { KataPageSkeleton } from '#/components/editor/KataPageSkeleton'
 import { getUserProgress } from '#/server/progress'
 import { getKata, getKatasForSection, getNextSection } from '#/server/kata'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/kata/$kataId')({
+  pendingComponent: KataPageSkeleton,
+  pendingMs: 0,
+  pendingMinMs: 300,
   loader: async ({ params }) => {
     const kata = await getKata({ data: { kataId: params.kataId } })
     if (!kata) throw notFound()
@@ -31,21 +34,7 @@ export const Route = createFileRoute('/kata/$kataId')({
 })
 
 function KataPage() {
-  const { kata, sectionKatas, nextSection, completedIds, sectionComplete } = Route.useLoaderData()
+  const { kata, sectionKatas } = Route.useLoaderData()
 
-  return (
-    <div className="flex h-[calc(100vh-3rem)]">
-      <div className="hidden md:flex">
-        <KataSidebar
-          katas={sectionKatas}
-          completedIds={completedIds}
-          activeId={kata.id}
-          sectionTitle={kata.sectionId ?? undefined}
-          sectionComplete={sectionComplete}
-          nextSection={nextSection}
-        />
-      </div>
-      <KataEditor key={kata.id} kata={kata} katas={sectionKatas} />
-    </div>
-  )
+  return <KataEditor key={kata.id} kata={kata} katas={sectionKatas} />
 }

@@ -80,38 +80,59 @@ export const getSections = createServerFn({ method: 'GET' }).handler(async () =>
 
 const SectionIdSchema = z.object({ sectionId: z.string().min(1) })
 
+const sectionKatasCache = new Map<string, ReturnType<typeof fetchKatasForSection>>()
+const nextSectionCache = new Map<string, ReturnType<typeof fetchNextSection>>()
+
+async function fetchKatasForSection(sectionId: string) {
+  const db = createDb()
+  return db.query.kata.findMany({
+    where: (k, { and, eq }) => and(eq(k.sectionId, sectionId), eq(k.published, true)),
+    orderBy: (k, { asc }) => asc(k.order),
+    columns: { id: true, title: true, difficulty: true, order: true }
+  })
+}
+
+async function fetchNextSection(currentSectionId: string) {
+  const db = createDb()
+  const current = await db.query.section.findFirst({
+    where: (s, { eq }) => eq(s.id, currentSectionId)
+  })
+  if (!current) return null
+  const next = await db.query.section.findFirst({
+    where: (s, { gt }) => gt(s.order, current.order),
+    orderBy: (s, { asc }) => asc(s.order)
+  })
+  if (!next) return null
+  const firstKata = await db.query.kata.findFirst({
+    where: (k, { and, eq }) => and(eq(k.sectionId, next.id), eq(k.published, true)),
+    orderBy: (k, { asc }) => asc(k.order),
+    columns: { id: true }
+  })
+  return { id: next.id, title: next.title, firstKataId: firstKata?.id ?? null }
+}
+
 export const getKatasForSection = createServerFn({ method: 'GET' })
   .inputValidator(d => SectionIdSchema.parse(d))
   .handler(async ({ data }) => {
     log.debug('getKatasForSection', { sectionId: data.sectionId })
-    const db = createDb()
-    return db.query.kata.findMany({
-      where: (k, { and, eq }) => and(eq(k.sectionId, data.sectionId), eq(k.published, true)),
-      orderBy: (k, { asc }) => asc(k.order),
-      columns: { id: true, title: true, difficulty: true, order: true }
-    })
+    let cached = sectionKatasCache.get(data.sectionId)
+    if (!cached) {
+      cached = fetchKatasForSection(data.sectionId)
+      sectionKatasCache.set(data.sectionId, cached)
+    }
+    return cached
   })
 
 export const getNextSection = createServerFn({ method: 'GET' })
   .inputValidator(d => z.object({ currentSectionId: z.string().min(1) }).parse(d))
   .handler(async ({ data }) => {
     log.debug('getNextSection', { currentSectionId: data.currentSectionId })
-    const db = createDb()
-    const current = await db.query.section.findFirst({
-      where: (s, { eq }) => eq(s.id, data.currentSectionId)
-    })
-    if (!current) return null
-    const next = await db.query.section.findFirst({
-      where: (s, { gt }) => gt(s.order, current.order),
-      orderBy: (s, { asc }) => asc(s.order)
-    })
-    if (!next) return null
-    const firstKata = await db.query.kata.findFirst({
-      where: (k, { and, eq }) => and(eq(k.sectionId, next.id), eq(k.published, true)),
-      orderBy: (k, { asc }) => asc(k.order),
-      columns: { id: true }
-    })
-    return { id: next.id, title: next.title, firstKataId: firstKata?.id ?? null }
+    let cached = nextSectionCache.get(data.currentSectionId)
+    if (!cached) {
+      cached = fetchNextSection(data.currentSectionId)
+      nextSectionCache.set(data.currentSectionId, cached)
+    }
+    return cached
   })
 
 // --- Admin functions (require admin role) ---
