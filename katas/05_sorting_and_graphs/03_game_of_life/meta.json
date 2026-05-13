@@ -1,0 +1,11 @@
+{
+  "title": "Game of Life",
+  "difficulty": "hard",
+  "published": true,
+  "hints": [
+    "For each cell, count its live neighbours (up to 8 surrounding cells, clamped to grid bounds).",
+    "A live cell survives with 2 or 3 neighbours; a dead cell becomes alive with exactly 3.",
+    "Build a new grid for the result — never mutate the input grid."
+  ],
+  "estimatedMinutes": 45
+}

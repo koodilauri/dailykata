@@ -1,0 +1,11 @@
+{
+  "title": "Range",
+  "difficulty": "easy",
+  "published": true,
+  "hints": [
+    "If only one argument is given, start from 0.",
+    "Use a loop or Array.from() to build the sequence.",
+    "If start > end, count downward instead."
+  ],
+  "estimatedMinutes": 10
+}

@@ -1,0 +1,11 @@
+{
+  "title": "FizzBuzz",
+  "difficulty": "easy",
+  "published": true,
+  "hints": [
+    "Use the modulo operator (%) to check divisibility.",
+    "Check divisibility by 15 first (or by both 3 and 5) before checking individually.",
+    "Use String(n) or n.toString() to convert the number."
+  ],
+  "estimatedMinutes": 5
+}

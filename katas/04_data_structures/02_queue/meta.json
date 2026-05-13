@@ -1,0 +1,11 @@
+{
+  "title": "Queue",
+  "difficulty": "easy",
+  "estimatedMinutes": 15,
+  "published": true,
+  "hints": [
+    "A queue is FIFO — first in, first out.",
+    "enqueue adds to the back; dequeue removes from the front.",
+    "An array with push() and shift() works, but for efficiency consider tracking a head index."
+  ]
+}

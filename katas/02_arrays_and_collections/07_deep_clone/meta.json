@@ -1,0 +1,11 @@
+{
+  "title": "Deep Clone",
+  "difficulty": "medium",
+  "published": true,
+  "hints": [
+    "Handle the base cases first: primitives can be returned as-is.",
+    "Arrays and objects each need recursive cloning of their contents.",
+    "JSON.parse(JSON.stringify(value)) is a one-liner that works for pure data."
+  ],
+  "estimatedMinutes": 25
+}

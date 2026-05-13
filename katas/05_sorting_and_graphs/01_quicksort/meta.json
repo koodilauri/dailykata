@@ -1,0 +1,11 @@
+{
+  "title": "Quicksort",
+  "difficulty": "medium",
+  "estimatedMinutes": 25,
+  "published": true,
+  "hints": [
+    "Choose a pivot (e.g. the last element) and partition the array into smaller/larger halves.",
+    "Recursively sort each half, then concatenate: sorted_left + [pivot] + sorted_right.",
+    "Base case: arrays of length 0 or 1 are already sorted."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Find the Largest Number",
+  "difficulty": "easy",
+  "published": true,
+  "hints": [
+    "You could iterate through the array keeping track of the largest seen so far.",
+    "Math.max() accepts individual arguments — how could you spread an array into it?",
+    "Math.max(...nums) spreads the array as individual arguments."
+  ],
+  "estimatedMinutes": 5
+}

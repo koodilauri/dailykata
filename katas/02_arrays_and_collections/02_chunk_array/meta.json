@@ -1,0 +1,11 @@
+{
+  "title": "Chunk Array",
+  "difficulty": "medium",
+  "published": true,
+  "hints": [
+    "Use a for loop with a step of `size` to slice the array at each position.",
+    "Array.from({ length: Math.ceil(arr.length / size) }) can create the result skeleton.",
+    "arr.slice(i, i + size) extracts each chunk."
+  ],
+  "estimatedMinutes": 15
+}

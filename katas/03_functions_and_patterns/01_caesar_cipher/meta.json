@@ -1,0 +1,11 @@
+{
+  "title": "Caesar Cipher",
+  "difficulty": "medium",
+  "published": true,
+  "hints": [
+    "Use charCodeAt() to get the char code and String.fromCharCode() to convert back.",
+    "Uppercase (65–90) and lowercase (97–122) have separate ASCII ranges.",
+    "Use ((code - base + shift) % 26 + 26) % 26 + base to handle negative shifts and wrapping."
+  ],
+  "estimatedMinutes": 20
+}

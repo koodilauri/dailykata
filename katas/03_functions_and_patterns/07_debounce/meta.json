@@ -1,0 +1,11 @@
+{
+  "title": "Debounce",
+  "difficulty": "hard",
+  "published": true,
+  "hints": [
+    "Store a timer reference (from setTimeout) in a closure variable.",
+    "Each call clears the previous timer with clearTimeout before setting a new one.",
+    "The returned function should capture the arguments and pass them to fn when the timer fires."
+  ],
+  "estimatedMinutes": 30
+}

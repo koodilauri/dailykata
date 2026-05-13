@@ -1,0 +1,11 @@
+{
+  "title": "Graph BFS",
+  "difficulty": "hard",
+  "estimatedMinutes": 30,
+  "published": true,
+  "hints": [
+    "Use a queue (FIFO) to track nodes to visit next.",
+    "Keep a visited Set to avoid processing the same node twice.",
+    "Enqueue all unvisited neighbours of the current node before moving on."
+  ]
+}

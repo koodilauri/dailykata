@@ -1,0 +1,11 @@
+{
+  "title": "A* Pathfinding",
+  "difficulty": "hard",
+  "estimatedMinutes": 60,
+  "published": true,
+  "hints": [
+    "A* uses f = g + h where g is cost so far and h is the heuristic (Manhattan distance).",
+    "Use a priority queue (min-heap by f score) to always expand the most promising node.",
+    "Reconstruct the path by following each node's 'came from' pointer back to the start."
+  ]
+}

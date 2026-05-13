@@ -1,0 +1,11 @@
+{
+  "title": "Dijkstra's Shortest Path",
+  "difficulty": "hard",
+  "estimatedMinutes": 40,
+  "published": true,
+  "hints": [
+    "Start with distance 0 for the source, Infinity for all others.",
+    "Always process the unvisited node with the smallest known distance first.",
+    "When visiting a node, update neighbours: if current_dist + edge_weight < known_dist, update."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Binary Search Tree",
+  "difficulty": "hard",
+  "estimatedMinutes": 35,
+  "published": true,
+  "hints": [
+    "For insert: if value < current, go left; if value > current, go right; recurse until you reach null.",
+    "For search: apply the same comparison logic — prune half the tree at each step.",
+    "In-order traversal (left → root → right) visits nodes in sorted ascending order."
+  ]
+}

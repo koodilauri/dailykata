@@ -1,0 +1,11 @@
+{
+  "title": "Sum of Digits",
+  "difficulty": "easy",
+  "published": true,
+  "hints": [
+    "Convert the number to a string to access each digit.",
+    "Use split(\"\") to get an array of digit characters.",
+    "Parse each character back to a number with Number() or the unary + operator."
+  ],
+  "estimatedMinutes": 5
+}

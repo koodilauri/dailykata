@@ -1,0 +1,11 @@
+{
+  "title": "LRU Cache",
+  "difficulty": "hard",
+  "estimatedMinutes": 45,
+  "published": true,
+  "hints": [
+    "An LRU cache evicts the Least Recently Used item when capacity is exceeded.",
+    "A Map preserves insertion order in JavaScript — you can use it to track recency.",
+    "On get or put, delete the key and re-insert it to move it to the 'most recently used' position."
+  ]
+}

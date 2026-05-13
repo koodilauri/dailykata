@@ -1,0 +1,11 @@
+{
+  "title": "Compose Functions",
+  "difficulty": "hard",
+  "published": true,
+  "hints": [
+    "reduceRight is the natural fit — it iterates right to left.",
+    "Start with the input value and thread it through each function.",
+    "fns.reduceRight((acc, fn) => fn(acc), x) applies them right to left."
+  ],
+  "estimatedMinutes": 20
+}

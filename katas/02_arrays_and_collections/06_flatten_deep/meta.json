@@ -1,0 +1,11 @@
+{
+  "title": "Flatten Deep",
+  "difficulty": "medium",
+  "published": true,
+  "hints": [
+    "arr.flat(Infinity) flattens to any depth in one line.",
+    "You can also use recursion: for each element, if it's an array recurse; otherwise push it.",
+    "reduce() + concat + recursive calls is the manual approach."
+  ],
+  "estimatedMinutes": 20
+}

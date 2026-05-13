@@ -1,0 +1,11 @@
+{
+  "title": "Priority Queue",
+  "difficulty": "medium",
+  "estimatedMinutes": 30,
+  "published": true,
+  "hints": [
+    "A min-heap keeps the smallest value at the top. Store values in an array.",
+    "After push, 'bubble up': swap the new element with its parent while it's smaller.",
+    "After pop, move the last element to index 0 and 'bubble down': swap with the smaller child."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Reverse a String",
+  "difficulty": "easy",
+  "published": true,
+  "hints": [
+    "Think about how you can split the string into individual characters.",
+    "Arrays have a reverse() method.",
+    "You can chain: split('').reverse().join('')"
+  ],
+  "estimatedMinutes": 5
+}

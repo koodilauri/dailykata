@@ -1,0 +1,11 @@
+{
+  "title": "Reverse Linked List",
+  "difficulty": "medium",
+  "estimatedMinutes": 20,
+  "published": true,
+  "hints": [
+    "Traverse the list, re-pointing each node's next to the previous node.",
+    "Keep three pointers: prev (starts null), curr, and next.",
+    "At the end, prev points to the new head."
+  ]
+}

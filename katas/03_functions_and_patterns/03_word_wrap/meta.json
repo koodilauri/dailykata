@@ -1,0 +1,11 @@
+{
+  "title": "Word Wrap",
+  "difficulty": "medium",
+  "published": true,
+  "hints": [
+    "If the text fits within the column length, return it unchanged.",
+    "Otherwise insert '\\n' at the column position and process the rest recursively.",
+    "For a cleaner break, look for the last space before the column limit."
+  ],
+  "estimatedMinutes": 20
+}

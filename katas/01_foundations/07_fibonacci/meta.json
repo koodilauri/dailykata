@@ -1,0 +1,11 @@
+{
+  "title": "Fibonacci",
+  "difficulty": "easy",
+  "published": true,
+  "hints": [
+    "The sequence starts: 0, 1, 1, 2, 3, 5, 8, 13...",
+    "Each number is the sum of the two preceding ones.",
+    "A loop that tracks the previous two values avoids recursion stack issues."
+  ],
+  "estimatedMinutes": 10
+}

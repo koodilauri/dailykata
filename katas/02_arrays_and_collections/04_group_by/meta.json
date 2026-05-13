@@ -1,0 +1,11 @@
+{
+  "title": "Group By",
+  "difficulty": "medium",
+  "published": true,
+  "hints": [
+    "Start with an empty object as the accumulator.",
+    "For each item, compute the key and push the item into the matching bucket.",
+    "Use reduce() or a simple for-of loop — both work well here."
+  ],
+  "estimatedMinutes": 20
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Binary Search",
+  "difficulty": "medium",
+  "published": true,
+  "hints": [
+    "Maintain a left and right pointer that narrow the search range each iteration.",
+    "Calculate mid as Math.floor((left + right) / 2).",
+    "If arr[mid] < target, move left up; if arr[mid] > target, move right down."
+  ],
+  "estimatedMinutes": 20
+}

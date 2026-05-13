@@ -1,0 +1,11 @@
+{
+  "title": "Memoize",
+  "difficulty": "hard",
+  "published": true,
+  "hints": [
+    "Store results in a Map or plain object keyed by the arguments.",
+    "For a single-argument function, JSON.stringify(args) works as a cache key.",
+    "Check if the key exists before calling the original function."
+  ],
+  "estimatedMinutes": 30
+}

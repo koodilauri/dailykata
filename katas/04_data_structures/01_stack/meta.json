@@ -1,0 +1,11 @@
+{
+  "title": "Stack",
+  "difficulty": "easy",
+  "estimatedMinutes": 15,
+  "published": true,
+  "hints": [
+    "A stack is LIFO — the last item pushed is the first popped.",
+    "An array works well as the internal store; push to the end, pop from the end.",
+    "peek() returns the last element without removing it."
+  ]
+}

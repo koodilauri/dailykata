@@ -1,0 +1,11 @@
+{
+  "title": "Prime Factors",
+  "difficulty": "medium",
+  "published": true,
+  "hints": [
+    "Start with divisor=2 and divide n as many times as it goes evenly.",
+    "Increment the divisor when it no longer divides evenly.",
+    "Stop when the divisor exceeds n (whatever remains is itself prime)."
+  ],
+  "estimatedMinutes": 15
+}

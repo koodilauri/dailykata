@@ -1,0 +1,11 @@
+{
+  "title": "Count Vowels",
+  "difficulty": "easy",
+  "published": true,
+  "hints": [
+    "Convert to lowercase first so you only need to check five characters.",
+    "A regex like /[aeiou]/g can match all vowels at once.",
+    "match() returns an array of matches (or null); check the length."
+  ],
+  "estimatedMinutes": 5
+}

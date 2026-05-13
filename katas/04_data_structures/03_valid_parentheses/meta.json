@@ -1,0 +1,11 @@
+{
+  "title": "Valid Parentheses",
+  "difficulty": "medium",
+  "estimatedMinutes": 20,
+  "published": true,
+  "hints": [
+    "Use a stack: push opening brackets, pop and match when you see a closing bracket.",
+    "If the stack is non-empty at the end, brackets were never closed.",
+    "A Map of closing→opening bracket pairs makes the matching logic clean."
+  ]
+}

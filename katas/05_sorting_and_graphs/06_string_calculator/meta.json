@@ -1,0 +1,11 @@
+{
+  "title": "String Calculator",
+  "difficulty": "hard",
+  "published": true,
+  "hints": [
+    "Split on commas and newlines to get the individual numbers; an empty string returns 0.",
+    "A custom delimiter is declared on the first line as '//[delimiter]\\n'.",
+    "Collect all negative numbers and throw a single error listing them all."
+  ],
+  "estimatedMinutes": 30
+}

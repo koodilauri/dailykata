@@ -1,0 +1,11 @@
+{
+  "title": "Flatten One Level",
+  "difficulty": "medium",
+  "published": true,
+  "hints": [
+    "Arrays have a flat() method that accepts a depth argument.",
+    "You can also use reduce() with concat to merge nested arrays.",
+    "[].concat(...arr) spreads nested arrays one level."
+  ],
+  "estimatedMinutes": 10
+}

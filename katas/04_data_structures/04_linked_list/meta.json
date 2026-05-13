@@ -1,0 +1,11 @@
+{
+  "title": "Linked List",
+  "difficulty": "medium",
+  "estimatedMinutes": 20,
+  "published": true,
+  "hints": [
+    "Each node holds a value and a reference to the next node.",
+    "Keep a head pointer; traverse with a while loop until next is null.",
+    "toArray() is useful for testing — traverse the list and collect values."
+  ]
+}

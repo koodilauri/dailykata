@@ -1,0 +1,11 @@
+{
+  "title": "Check Palindrome",
+  "difficulty": "easy",
+  "published": true,
+  "hints": [
+    "Convert to lowercase first to handle case-insensitivity.",
+    "You already know how to reverse a string from kata 1.",
+    "Compare the original (lowercased) string to its reverse."
+  ],
+  "estimatedMinutes": 5
+}

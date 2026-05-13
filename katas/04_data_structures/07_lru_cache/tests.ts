@@ -1,0 +1,30 @@
+test('get returns -1 for missing key', () => {
+  const cache = new LRUCache(2)
+  expect(cache.get(1)).toBe(-1)
+})
+test('put and get basic usage', () => {
+  const cache = new LRUCache(2)
+  cache.put(1, 10)
+  expect(cache.get(1)).toBe(10)
+})
+test('evicts least recently used when over capacity', () => {
+  const cache = new LRUCache(2)
+  cache.put(1, 1); cache.put(2, 2)
+  cache.get(1)
+  cache.put(3, 3)
+  expect(cache.get(2)).toBe(-1)
+  expect(cache.get(3)).toBe(3)
+})
+test('put updates value for existing key without eviction', () => {
+  const cache = new LRUCache(2)
+  cache.put(1, 1); cache.put(2, 2)
+  cache.put(1, 10)
+  expect(cache.get(1)).toBe(10)
+  expect(cache.get(2)).toBe(2)
+})
+test('capacity of 1 always evicts previous entry', () => {
+  const cache = new LRUCache(1)
+  cache.put(1, 1); cache.put(2, 2)
+  expect(cache.get(1)).toBe(-1)
+  expect(cache.get(2)).toBe(2)
+})
