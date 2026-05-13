@@ -12,7 +12,9 @@ import { CodeEditor, type CodeEditorHandle } from './CodeEditor'
 import { DescriptionPanel } from './DescriptionPanel'
 import { KataBar } from './KataBar'
 import { LoginDialog } from './LoginDialog'
+import { ScrollArea } from '#/components/ui/scroll-area'
 import { TestResults } from './TestResults'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 const draftKey = (kataId: string) => `kata_draft_${kataId}`
 
@@ -34,7 +36,7 @@ interface Props {
 
 const PENDING_SUBMIT_KEY = 'dailykata_pending_submit'
 
-type MobileTab = 'description' | 'code' | 'results'
+type MobileTab = 'description' | 'code'
 
 export function KataEditor({ kata, katas }: Props) {
   const router = useRouter()
@@ -48,7 +50,10 @@ export function KataEditor({ kata, katas }: Props) {
   const [loginOpen, setLoginOpen] = useState(false)
   const [showAchievement, setShowAchievement] = useState(false)
   const [mobileTab, setMobileTab] = useState<MobileTab>('description')
+  const [resultsCollapsed, setResultsCollapsed] = useState(false)
   const [initialCode] = useState(() => localStorage.getItem(draftKey(kata.id)) ?? kata.starterCode)
+
+  const hasResults = results !== null || running || error !== null
 
   function handleCodeChange(code: string) {
     if (saveTimer.current) clearTimeout(saveTimer.current)
@@ -103,7 +108,7 @@ export function KataEditor({ kata, katas }: Props) {
     setRunning(true)
     setResults(null)
     setError(null)
-    if (isMobile) setMobileTab('results')
+    setResultsCollapsed(false)
     try {
       const res = await runTests(code, kata.tests)
       setResults(res)
@@ -115,37 +120,65 @@ export function KataEditor({ kata, katas }: Props) {
     }
   }
 
-  const mobileTabs: { id: MobileTab; label: string }[] = [
-    { id: 'description', label: 'Description' },
-    { id: 'code', label: 'Code' },
-    {
-      id: 'results',
-      label: results
-        ? `Results ${results.filter(r => r.passed).length}/${results.length}`
-        : 'Results'
-    }
-  ]
+  const resultsSummary = running
+    ? 'Running…'
+    : error
+      ? 'Error'
+      : results
+        ? `${results.filter(r => r.passed).length}/${results.length} passed`
+        : ''
+
+  const resultsPanel = hasResults && (
+    <div className="border-border shrink-0 border-t">
+      <button
+        onClick={() => setResultsCollapsed(c => !c)}
+        className="border-border text-muted-foreground hover:bg-accent flex h-9 w-full items-center gap-2 border-b px-4 text-xs font-semibold transition-colors"
+      >
+        {resultsCollapsed ? (
+          <ChevronUp className="h-3.5 w-3.5 shrink-0" />
+        ) : (
+          <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+        )}
+        <span>Results</span>
+        {resultsSummary && (
+          <span
+            className={cn(
+              'ml-1 font-normal',
+              results?.every(r => r.passed) ? 'text-emerald-400' : results ? 'text-red-400' : ''
+            )}
+          >
+            — {resultsSummary}
+          </span>
+        )}
+      </button>
+      {!resultsCollapsed && (
+        <ScrollArea autoHeight className="max-h-[50vh]">
+          <TestResults results={results} running={running} error={error} />
+        </ScrollArea>
+      )}
+    </div>
+  )
 
   return (
     <div className="flex h-full flex-1 flex-col">
       <KataBar kata={kata} katas={katas} running={running} onRun={handleRun} />
 
       {isMobile ? (
-        /* ── Mobile: tab-based layout ── */
+        /* ── Mobile ── */
         <>
           <div className="border-border bg-secondary flex shrink-0 border-b">
-            {mobileTabs.map(tab => (
+            {(['description', 'code'] as MobileTab[]).map(tab => (
               <button
-                key={tab.id}
-                onClick={() => setMobileTab(tab.id)}
+                key={tab}
+                onClick={() => setMobileTab(tab)}
                 className={cn(
-                  'flex-1 border-b-2 py-2.5 text-xs font-semibold transition-colors',
-                  mobileTab === tab.id
+                  'flex-1 border-b-2 py-2.5 text-xs font-semibold capitalize transition-colors',
+                  mobileTab === tab
                     ? 'border-sky-500 text-sky-400'
                     : 'text-muted-foreground border-transparent'
                 )}
               >
-                {tab.label}
+                {tab}
               </button>
             ))}
           </div>
@@ -162,46 +195,34 @@ export function KataEditor({ kata, katas }: Props) {
                 <CodeEditor ref={editorRef} initialCode={initialCode} onChange={handleCodeChange} />
               </div>
             )}
-            {mobileTab === 'results' && (
-              <div className="flex h-full flex-col overflow-hidden">
-                <TestResults results={results} running={running} error={error} />
-              </div>
-            )}
           </div>
+
+          {resultsPanel}
         </>
       ) : (
-        /* ── Desktop: resizable 3-panel layout ── */
-        <ResizablePanelGroup orientation="horizontal" className="flex-1 overflow-hidden">
-          <ResizablePanel defaultSize={30} minSize={20}>
-            <DescriptionPanel key={kata.id} kata={kata} />
-          </ResizablePanel>
+        /* ── Desktop ── */
+        <>
+          <ResizablePanelGroup orientation="horizontal" className="flex-1 overflow-hidden">
+            <ResizablePanel defaultSize={40} minSize={20}>
+              <DescriptionPanel key={kata.id} kata={kata} />
+            </ResizablePanel>
 
-          <ResizableHandle withHandle />
+            <ResizableHandle withHandle />
 
-          <ResizablePanel defaultSize={40} minSize={25}>
-            <div className="flex h-full flex-col">
-              <div className="border-border bg-secondary flex h-10 shrink-0 items-center border-b px-4">
-                <span className="bg-accent rounded-md px-3 py-1 text-xs font-medium">
-                  solution.ts
-                </span>
+            <ResizablePanel defaultSize={60} minSize={30}>
+              <div className="flex h-full flex-col">
+                <div className="border-border bg-secondary flex h-10 shrink-0 items-center border-b px-4">
+                  <span className="bg-accent rounded-md px-3 py-1 text-xs font-medium">
+                    solution.ts
+                  </span>
+                </div>
+                <CodeEditor ref={editorRef} initialCode={initialCode} onChange={handleCodeChange} />
               </div>
-              <CodeEditor ref={editorRef} initialCode={initialCode} onChange={handleCodeChange} />
-            </div>
-          </ResizablePanel>
+            </ResizablePanel>
+          </ResizablePanelGroup>
 
-          <ResizableHandle withHandle />
-
-          <ResizablePanel defaultSize={30} minSize={20}>
-            <div className="flex h-full flex-col">
-              <div className="border-border bg-secondary flex h-10 shrink-0 items-center border-b px-4">
-                <span className="bg-accent rounded-md px-3 py-1 text-xs font-medium">Results</span>
-              </div>
-              <div className="flex flex-1 flex-col overflow-hidden">
-                <TestResults results={results} running={running} error={error} />
-              </div>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          {resultsPanel}
+        </>
       )}
 
       <AchievementToast show={showAchievement} kataTitle={kata.title} />

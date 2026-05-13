@@ -42,9 +42,6 @@ function NavTab({ to, label, Icon, active }: NavTabProps) {
 export function BottomNav({ nextKataId }: { nextKataId: string | null }) {
   const pathname = useRouterState({ select: s => s.location.pathname })
 
-  // Hide on kata editor pages (give editor full screen)
-  if (pathname.startsWith('/kata/')) return null
-
   const continueActive = pathname.startsWith('/kata/')
 
   return (

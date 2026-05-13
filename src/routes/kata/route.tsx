@@ -3,6 +3,8 @@ import { SidebarContext } from '#/components/editor/sidebar-context'
 import { createFileRoute, Outlet, useRouterState } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
+const NARROW_BREAKPOINT = 1000
+
 type SidebarData = {
   kata: { id: string }
   sectionKatas: Array<{
@@ -20,6 +22,7 @@ type SidebarData = {
 function KataLayout() {
   const routerState = useRouterState()
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [isNarrow, setIsNarrow] = useState(false)
 
   const isKataRoute =
     routerState.matches.some(m => m.routeId === '/kata/$kataId') ||
@@ -35,6 +38,21 @@ function KataLayout() {
     if (loaderData) setSidebarData(loaderData)
   }, [loaderData])
 
+  useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${NARROW_BREAKPOINT - 1}px)`)
+    const onChange = () => {
+      if (window.innerWidth < NARROW_BREAKPOINT) {
+        setIsNarrow(true)
+        setSidebarOpen(false)
+      } else {
+        setIsNarrow(false)
+      }
+    }
+    mql.addEventListener('change', onChange)
+    onChange()
+    return () => mql.removeEventListener('change', onChange)
+  }, [])
+
   if (!isKataRoute) {
     return <Outlet />
   }
@@ -47,6 +65,17 @@ function KataLayout() {
     )
   }
 
+  const sidebarProps = sidebarData
+    ? {
+        katas: sidebarData.sectionKatas,
+        completedIds: sidebarData.completedIds,
+        activeId: sidebarData.kata.id,
+        sectionTitle: sidebarData.sectionId ?? undefined,
+        sectionComplete: sidebarData.sectionComplete,
+        nextSection: sidebarData.nextSection
+      }
+    : null
+
   return (
     <SidebarContext.Provider
       value={{
@@ -56,17 +85,23 @@ function KataLayout() {
         completedIds: sidebarData?.completedIds ?? []
       }}
     >
-      <div className="flex h-[calc(100vh-3rem)]">
-        {sidebarData && (
-          <KataSidebar
-            katas={sidebarData.sectionKatas}
-            completedIds={sidebarData.completedIds}
-            activeId={sidebarData.kata.id}
-            sectionTitle={sidebarData.sectionId ?? undefined}
-            sectionComplete={sidebarData.sectionComplete}
-            nextSection={sidebarData.nextSection}
-          />
-        )}
+      <div className="relative flex h-[calc(100vh-3rem-4rem)] md:h-[calc(100vh-3rem)]">
+        {sidebarProps &&
+          (isNarrow ? (
+            sidebarOpen && (
+              <>
+                <div
+                  className="absolute inset-0 z-10 bg-black/40"
+                  onClick={() => setSidebarOpen(false)}
+                />
+                <div className="absolute inset-y-0 left-0 z-20 shadow-xl">
+                  <KataSidebar {...sidebarProps} />
+                </div>
+              </>
+            )
+          ) : (
+            <KataSidebar {...sidebarProps} />
+          ))}
         <Outlet />
       </div>
     </SidebarContext.Provider>

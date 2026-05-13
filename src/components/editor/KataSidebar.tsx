@@ -47,7 +47,7 @@ export function KataSidebar({
   if (!open) return null
 
   return (
-    <div className="border-border bg-card hidden h-full w-[240px] shrink-0 flex-col border-r md:flex">
+    <div className="border-border bg-card flex h-full w-[240px] shrink-0 flex-col border-r">
       <button
         onClick={toggle}
         className="border-border text-muted-foreground hover:text-foreground hover:bg-accent flex h-12 w-full shrink-0 items-center border-b px-2.5 transition-colors"

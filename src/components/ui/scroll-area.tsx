@@ -2,16 +2,21 @@ import { ScrollArea as ScrollAreaPrimitive } from '@base-ui/react/scroll-area'
 
 import { cn } from '#/lib/utils'
 
-function ScrollArea({ className, children, ...props }: ScrollAreaPrimitive.Root.Props) {
+type ScrollAreaProps = ScrollAreaPrimitive.Root.Props & { autoHeight?: boolean }
+
+function ScrollArea({ className, children, autoHeight = false, ...props }: ScrollAreaProps) {
   return (
     <ScrollAreaPrimitive.Root
       data-slot="scroll-area"
-      className={cn('relative', className)}
+      className={cn('relative', autoHeight && 'overflow-hidden', className)}
       {...props}
     >
       <ScrollAreaPrimitive.Viewport
         data-slot="scroll-area-viewport"
-        className="focus-visible:ring-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1"
+        className={cn(
+          'focus-visible:ring-ring/50 rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1',
+          autoHeight ? 'max-h-[inherit] w-full overflow-y-auto' : 'size-full'
+        )}
       >
         {children}
       </ScrollAreaPrimitive.Viewport>
