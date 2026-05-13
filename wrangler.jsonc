@@ -3,7 +3,12 @@
   "name": "dailykata",
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
+  "keep_vars": true,
   "main": "@tanstack/react-start/server-entry",
+  "vars": {
+    "BETTER_AUTH_URL": "https://dailykata.kata-weekly.workers.dev",
+    "VITE_BETTER_AUTH_URL": "https://dailykata.kata-weekly.workers.dev"
+  },
   "observability": {
     "enabled": false,
     "head_sampling_rate": 1,
