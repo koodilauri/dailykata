@@ -1,4 +1,5 @@
 import { KataSidebar } from '#/components/editor/KataSidebar'
+import { SidebarContext } from '#/components/editor/sidebar-context'
 import { createFileRoute, Outlet, useRouterState } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
@@ -18,6 +19,7 @@ type SidebarData = {
 
 function KataLayout() {
   const routerState = useRouterState()
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const isKataRoute =
     routerState.matches.some(m => m.routeId === '/kata/$kataId') ||
@@ -37,10 +39,25 @@ function KataLayout() {
     return <Outlet />
   }
 
+  function markCompleted(kataId: string) {
+    setSidebarData(prev =>
+      prev && !prev.completedIds.includes(kataId)
+        ? { ...prev, completedIds: [...prev.completedIds, kataId] }
+        : prev
+    )
+  }
+
   return (
-    <div className="flex h-[calc(100vh-3rem)]">
-      {sidebarData && (
-        <div className="hidden md:flex">
+    <SidebarContext.Provider
+      value={{
+        open: sidebarOpen,
+        toggle: () => setSidebarOpen(o => !o),
+        markCompleted,
+        completedIds: sidebarData?.completedIds ?? []
+      }}
+    >
+      <div className="flex h-[calc(100vh-3rem)]">
+        {sidebarData && (
           <KataSidebar
             katas={sidebarData.sectionKatas}
             completedIds={sidebarData.completedIds}
@@ -49,10 +66,10 @@ function KataLayout() {
             sectionComplete={sidebarData.sectionComplete}
             nextSection={sidebarData.nextSection}
           />
-        </div>
-      )}
-      <Outlet />
-    </div>
+        )}
+        <Outlet />
+      </div>
+    </SidebarContext.Provider>
   )
 }
 

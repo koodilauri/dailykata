@@ -1,14 +1,13 @@
 'use client'
 
-import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
+import { useSidebar } from '#/components/editor/sidebar-context'
 import { Link } from '@tanstack/react-router'
-import { Play } from 'lucide-react'
+import { PanelLeft, Play } from 'lucide-react'
 
 interface Kata {
   id: string
   title: string
-  difficulty: 'easy' | 'medium' | 'hard'
 }
 
 interface Props {
@@ -18,43 +17,26 @@ interface Props {
   onRun: () => void
 }
 
-const difficultyColor: Record<Kata['difficulty'], string> = {
-  easy: 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10',
-  medium: 'border-amber-500/30 text-amber-400 bg-amber-500/10',
-  hard: 'border-red-500/30 text-red-400 bg-red-500/10'
-}
-
 export function KataBar({ kata, katas, running, onRun }: Props) {
   const currentIndex = katas.findIndex(k => k.id === kata.id)
-  const prevKata = currentIndex > 0 ? katas[currentIndex - 1] : null
   const nextKata = currentIndex < katas.length - 1 ? katas[currentIndex + 1] : null
+  const { open, toggle, completedIds } = useSidebar()
+  const isCompleted = completedIds.includes(kata.id)
 
   return (
     <div className="border-border bg-card flex h-12 shrink-0 items-center gap-3 border-b px-5">
+      {!open && (
+        <button
+          onClick={toggle}
+          className="text-muted-foreground hover:text-foreground hover:bg-accent -ml-2 hidden rounded-md p-1.5 transition-colors md:block"
+          aria-label="Show section"
+        >
+          <PanelLeft className="h-4 w-4" />
+        </button>
+      )}
       <span className="font-bold tracking-tight">{kata.title}</span>
-      <Badge variant="outline" className={difficultyColor[kata.difficulty]}>
-        {kata.difficulty}
-      </Badge>
-      <Badge variant="outline" className="border-sky-500/30 bg-sky-500/10 text-sky-400">
-        +100 XP
-      </Badge>
       <div className="ml-auto flex gap-2">
-        {prevKata ? (
-          <Link to="/kata/$kataId" params={{ kataId: prevKata.id }}>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-border text-muted-foreground hover:border-sky-500/70 hover:text-sky-400"
-            >
-              ← Prev
-            </Button>
-          </Link>
-        ) : (
-          <Button variant="outline" size="sm" disabled className="opacity-40">
-            ← Prev
-          </Button>
-        )}
-        {nextKata ? (
+        {isCompleted && nextKata && (
           <Link to="/kata/$kataId" params={{ kataId: nextKata.id }}>
             <Button
               variant="outline"
@@ -64,10 +46,6 @@ export function KataBar({ kata, katas, running, onRun }: Props) {
               Next →
             </Button>
           </Link>
-        ) : (
-          <Button variant="outline" size="sm" disabled className="opacity-40">
-            Next →
-          </Button>
         )}
         <Button
           onClick={onRun}

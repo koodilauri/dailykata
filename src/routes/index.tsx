@@ -24,12 +24,6 @@ const difficultyIconBg: Record<string, string> = {
   hard: 'bg-red-500/10'
 }
 
-const difficultyTag: Record<string, string> = {
-  easy: 'text-emerald-400 bg-emerald-500/12 border-emerald-500/25',
-  medium: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
-  hard: 'text-red-400 bg-red-500/10 border-red-500/20'
-}
-
 function KataList() {
   const { sections, progress } = Route.useLoaderData()
   const completedIds = new Set(progress.map(p => p.kataId))
@@ -67,7 +61,6 @@ function KataList() {
               <ul className="flex flex-col gap-3">
                 {sec.katas.map((kata, i) => {
                   const done = completedIds.has(kata.id)
-                  const isNext = !done && sec.katas.slice(0, i).every(k => completedIds.has(k.id))
                   return (
                     <li
                       key={kata.id}
@@ -84,10 +77,6 @@ function KataList() {
                             : 'border-border bg-card hover:-translate-y-px hover:border-sky-500/40 hover:bg-sky-500/5'
                         )}
                       >
-                        {isNext && (
-                          <div className="absolute top-0 bottom-0 left-0 w-0.5 rounded-r-full bg-sky-500" />
-                        )}
-
                         <div
                           className={cn(
                             'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl',
@@ -97,32 +86,21 @@ function KataList() {
                           {difficultyIcon[kata.difficulty]}
                         </div>
 
-                        <div className="min-w-0 flex-1">
-                          <div className="mb-1 flex items-center gap-2">
-                            <span className="text-muted-foreground text-xs tabular-nums">
-                              #{kata.order}
-                            </span>
-                            <span
-                              className={cn(
-                                'rounded-md border px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase',
-                                difficultyTag[kata.difficulty]
-                              )}
-                            >
-                              {kata.difficulty}
-                            </span>
-                          </div>
-                          <div
+                        <div className="flex min-w-0 flex-1 items-center gap-2">
+                          <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+                            #{kata.order}
+                          </span>
+                          <span
                             className={cn(
-                              'text-sm leading-tight font-semibold',
+                              'truncate text-base leading-tight font-semibold',
                               done && 'text-muted-foreground line-through'
                             )}
                           >
                             {kata.title}
-                          </div>
+                          </span>
                         </div>
 
                         <div className="flex shrink-0 flex-col items-end gap-1.5">
-                          <span className="text-xs font-bold text-sky-400">+100 XP</span>
                           {done ? (
                             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-black text-black">
                               ✓

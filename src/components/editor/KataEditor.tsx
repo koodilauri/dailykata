@@ -6,6 +6,7 @@ import { runTests, type TestResult } from '#/lib/runner'
 import { cn } from '#/lib/utils'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from '@tanstack/react-router'
+import { useSidebar } from '#/components/editor/sidebar-context'
 import { AchievementToast } from './AchievementToast'
 import { CodeEditor, type CodeEditorHandle } from './CodeEditor'
 import { DescriptionPanel } from './DescriptionPanel'
@@ -37,6 +38,7 @@ type MobileTab = 'description' | 'code' | 'results'
 
 export function KataEditor({ kata, katas }: Props) {
   const router = useRouter()
+  const { markCompleted } = useSidebar()
   const isMobile = useIsMobile()
   const editorRef = useRef<CodeEditorHandle>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -85,6 +87,7 @@ export function KataEditor({ kata, katas }: Props) {
     if (res.ok) {
       const data = (await res.json()) as { requiresAuth: boolean; xpEarned?: number }
       if (!data.requiresAuth) {
+        markCompleted(kata.id)
         void router.invalidate()
         if (data.xpEarned && data.xpEarned > 0) {
           setShowAchievement(true)
