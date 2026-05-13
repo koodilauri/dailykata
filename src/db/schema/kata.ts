@@ -19,6 +19,7 @@ export const kata = pgTable('kata', {
   tests: text('tests').notNull(),
   hints: text('hints').array(),
   difficulty: difficultyEnum('difficulty').notNull().default('easy'),
+  estimatedMinutes: integer('estimated_minutes'),
   order: integer('order').notNull(),
   sectionId: text('section_id').references(() => section.id, { onDelete: 'set null' }),
   published: boolean('published').notNull().default(false),

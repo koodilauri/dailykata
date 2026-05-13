@@ -8,6 +8,7 @@ import { PanelLeft, Play } from 'lucide-react'
 interface Kata {
   id: string
   title: string
+  estimatedMinutes: number | null
 }
 
 interface Props {
@@ -35,6 +36,9 @@ export function KataBar({ kata, katas, running, onRun }: Props) {
         </button>
       )}
       <span className="font-bold tracking-tight">{kata.title}</span>
+      {kata.estimatedMinutes && (
+        <span className="text-muted-foreground text-xs">~{kata.estimatedMinutes} min</span>
+      )}
       <div className="ml-auto flex gap-2">
         {isCompleted && nextKata && (
           <Link to="/kata/$kataId" params={{ kataId: nextKata.id }}>

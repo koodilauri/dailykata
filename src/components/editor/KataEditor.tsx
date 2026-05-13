@@ -26,6 +26,7 @@ interface Kata {
   tests: string
   hints: string[] | null
   difficulty: 'easy' | 'medium' | 'hard'
+  estimatedMinutes: number | null
   order: number
 }
 

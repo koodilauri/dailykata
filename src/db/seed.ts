@@ -22,6 +22,7 @@ function loadSectionsAndKatas() {
     id: string
     title: string
     difficulty: 'easy' | 'medium' | 'hard'
+    estimatedMinutes: number | null
     order: number
     sectionId: string
     published: boolean
@@ -50,6 +51,7 @@ function loadSectionsAndKatas() {
       const meta = JSON.parse(readFileSync(join(dir, 'meta.json'), 'utf8')) as {
         title: string
         difficulty: 'easy' | 'medium' | 'hard'
+        estimatedMinutes?: number
         published?: boolean
         hints?: string[]
       }
@@ -58,6 +60,7 @@ function loadSectionsAndKatas() {
         id: kataSlug,
         title: meta.title,
         difficulty: meta.difficulty,
+        estimatedMinutes: meta.estimatedMinutes ?? null,
         order: kataOrder,
         sectionId: sectionSlug,
         published: meta.published ?? true,
