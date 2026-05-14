@@ -35,6 +35,7 @@ export const CodeEditor = forwardRef<CodeEditorHandle, Props>(function CodeEdito
         basicSetup,
         javascript({ typescript: true }),
         oneDark,
+        EditorView.lineWrapping,
         EditorView.updateListener.of(update => {
           if (update.docChanged) onChangeRef.current?.(update.state.doc.toString())
         })
@@ -51,7 +52,7 @@ export const CodeEditor = forwardRef<CodeEditorHandle, Props>(function CodeEdito
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-auto [&_.cm-editor]:h-full [&_.cm-scroller]:h-full"
+      className="flex-1 overflow-hidden [&_.cm-editor]:h-full [&_.cm-editor]:w-full [&_.cm-scroller]:h-full [&_.cm-scroller]:overflow-auto"
     />
   )
 })

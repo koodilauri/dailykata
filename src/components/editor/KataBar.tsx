@@ -35,11 +35,15 @@ export function KataBar({ kata, katas, running, onRun }: Props) {
           <PanelLeft className="h-4 w-4" />
         </button>
       )}
-      <span className="font-bold tracking-tight">{kata.title}</span>
-      {kata.estimatedMinutes && (
-        <span className="text-muted-foreground text-xs">~{kata.estimatedMinutes} min</span>
-      )}
-      <div className="ml-auto flex gap-2">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <span className="truncate font-bold tracking-tight">{kata.title}</span>
+        {kata.estimatedMinutes && (
+          <span className="text-muted-foreground shrink-0 text-xs">
+            ~{kata.estimatedMinutes} min
+          </span>
+        )}
+      </div>
+      <div className="flex shrink-0 gap-2">
         {isCompleted && nextKata && (
           <Link to="/kata/$kataId" params={{ kataId: nextKata.id }}>
             <Button
