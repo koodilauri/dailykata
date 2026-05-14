@@ -82,7 +82,8 @@ function KataLayout() {
         open: sidebarOpen,
         toggle: () => setSidebarOpen(o => !o),
         markCompleted,
-        completedIds: sidebarData?.completedIds ?? []
+        completedIds: sidebarData?.completedIds ?? [],
+        nextSection: sidebarData?.nextSection ?? null
       }}
     >
       <div className="relative flex h-[calc(100vh-3rem-4rem)] md:h-[calc(100vh-3rem)]">

@@ -93,10 +93,11 @@ function KataList() {
               <ul className="flex flex-col gap-3">
                 {sec.katas.map((kata, i) => {
                   const done = completedIds.has(kata.id)
+                  const isNext = kata.id === nextKataId
                   return (
                     <li
                       key={kata.id}
-                      ref={kata.id === nextKataId ? nextKataRef : undefined}
+                      ref={isNext ? nextKataRef : undefined}
                       className="animate-fade-up"
                       style={{ animationDelay: `${i * 30}ms` }}
                     >
@@ -107,7 +108,9 @@ function KataList() {
                           'group relative flex items-center gap-3.5 overflow-hidden rounded-2xl border p-4 transition-all duration-200',
                           done
                             ? 'border-emerald-500/20 bg-emerald-500/5 opacity-75'
-                            : 'border-border bg-card hover:-translate-y-px hover:border-sky-500/40 hover:bg-sky-500/5'
+                            : isNext
+                              ? 'border-sky-500/50 bg-sky-500/8 hover:-translate-y-px hover:border-sky-500/70 hover:bg-sky-500/12'
+                              : 'border-border bg-card hover:-translate-y-px hover:border-sky-500/40 hover:bg-sky-500/5'
                         )}
                       >
                         <div
@@ -138,6 +141,10 @@ function KataList() {
                             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-black text-black">
                               ✓
                             </div>
+                          ) : isNext ? (
+                            <span className="text-[10px] font-bold tracking-wide text-sky-400 uppercase">
+                              ▶ Continue
+                            </span>
                           ) : (
                             <ArrowRight className="text-muted-foreground h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:text-sky-400" />
                           )}

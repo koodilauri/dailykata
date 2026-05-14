@@ -5,13 +5,15 @@ interface SidebarContextValue {
   toggle: () => void
   markCompleted: (kataId: string) => void
   completedIds: string[]
+  nextSection: { title: string; firstKataId: string | null } | null
 }
 
 export const SidebarContext = createContext<SidebarContextValue>({
   open: true,
   toggle: () => {},
   markCompleted: () => {},
-  completedIds: []
+  completedIds: [],
+  nextSection: null
 })
 
 export function useSidebar() {

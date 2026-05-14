@@ -27,6 +27,7 @@ interface Kata {
   hints: string[] | null
   difficulty: 'easy' | 'medium' | 'hard'
   estimatedMinutes: number | null
+  sectionId: string | null
   order: number
 }
 
@@ -41,7 +42,7 @@ type MobileTab = 'description' | 'code'
 
 export function KataEditor({ kata, katas }: Props) {
   const router = useRouter()
-  const { markCompleted } = useSidebar()
+  const { markCompleted, completedIds, nextSection } = useSidebar()
   const isMobile = useIsMobile()
   const editorRef = useRef<CodeEditorHandle>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -50,6 +51,13 @@ export function KataEditor({ kata, katas }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
   const [showAchievement, setShowAchievement] = useState(false)
+  const [earnedXp, setEarnedXp] = useState(0)
+  const [prevXp, setPrevXp] = useState(0)
+  const [sectionJustCompleted, setSectionJustCompleted] = useState(false)
+  const [achievementNextKataId, setAchievementNextKataId] = useState<string | null>(null)
+  const [achievementNextSectionTitle, setAchievementNextSectionTitle] = useState<string | null>(
+    null
+  )
   const [mobileTab, setMobileTab] = useState<MobileTab>('description')
   const [resultsCollapsed, setResultsCollapsed] = useState(false)
   const [initialCode] = useState(() => localStorage.getItem(draftKey(kata.id)) ?? kata.starterCode)
@@ -93,11 +101,25 @@ export function KataEditor({ kata, katas }: Props) {
     if (res.ok) {
       const data = (await res.json()) as { requiresAuth: boolean; xpEarned?: number }
       if (!data.requiresAuth) {
+        const rootMatch = router.state.matches.find(m => m.routeId === '__root__')
+        const currentXp = (rootMatch?.loaderData as any)?.stats?.totalXp ?? 0
+
+        const newCompleted = new Set([...completedIds, kata.id])
+        const secDone = katas.length > 0 && katas.every(k => newCompleted.has(k.id))
+        const nextInSection = katas.find(k => !newCompleted.has(k.id))?.id ?? null
+        const nextId = secDone ? (nextSection?.firstKataId ?? null) : nextInSection
+
         markCompleted(kata.id)
         void router.invalidate()
+
         if (data.xpEarned && data.xpEarned > 0) {
+          setPrevXp(currentXp)
+          setEarnedXp(data.xpEarned)
+          setSectionJustCompleted(secDone)
+          setAchievementNextKataId(nextId)
+          setAchievementNextSectionTitle(secDone ? (nextSection?.title ?? null) : null)
           setShowAchievement(true)
-          setTimeout(() => setShowAchievement(false), 4000)
+          setTimeout(() => setShowAchievement(false), 7000)
         }
       }
     }
@@ -226,7 +248,17 @@ export function KataEditor({ kata, katas }: Props) {
         </>
       )}
 
-      <AchievementToast show={showAchievement} kataTitle={kata.title} />
+      <AchievementToast
+        show={showAchievement}
+        kataTitle={kata.title}
+        sectionId={kata.sectionId}
+        xpEarned={earnedXp}
+        prevXp={prevXp}
+        nextKataId={achievementNextKataId}
+        sectionComplete={sectionJustCompleted}
+        nextSectionTitle={achievementNextSectionTitle}
+        onDismiss={() => setShowAchievement(false)}
+      />
       <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} kataId={kata.id} />
     </div>
   )

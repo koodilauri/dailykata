@@ -1,3 +1,4 @@
+import { ActivityCalendar } from '#/components/dashboard/ActivityCalendar'
 import { cn } from '#/lib/utils'
 import { getSession } from '#/server/auth'
 import { getKatas } from '#/server/kata'
@@ -144,6 +145,8 @@ function Home() {
           </Link>
         </div>
       )}
+
+      <ActivityCalendar progress={progress} streak={currentStreak} />
 
       {/* Recent katas */}
       {recentProgress.length > 0 && (
