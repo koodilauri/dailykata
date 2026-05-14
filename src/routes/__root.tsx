@@ -191,9 +191,30 @@ function RootLayout() {
               <div className="rounded-full border border-orange-900/50 bg-linear-to-r from-orange-950 to-red-950 px-2.5 py-0.5 text-xs font-bold text-amber-400">
                 🔥 {currentStreak}
               </div>
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-sky-600 to-violet-500 text-xs font-bold text-white">
-                {user.name?.[0]?.toUpperCase() ?? user.email[0].toUpperCase()}
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full bg-linear-to-br from-sky-600 to-violet-500 text-xs font-bold text-white outline-none">
+                  {user.name?.[0]?.toUpperCase() ?? user.email[0].toUpperCase()}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="text-muted-foreground truncate px-1.5 py-1 text-xs font-medium">
+                    {user.name ?? user.email}
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem render={<Link to="/account" />}>Account</DropdownMenuItem>
+                  {user.role === 'admin' && (
+                    <DropdownMenuItem render={<Link to="/admin" />}>Admin</DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() =>
+                      signOut({ fetchOptions: { onSuccess: () => window.location.assign('/') } })
+                    }
+                  >
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <Button
