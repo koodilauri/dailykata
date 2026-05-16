@@ -13,9 +13,10 @@ interface Kata {
 
 interface Props {
   kata: Kata
+  hideHistory?: boolean
 }
 
-export function DescriptionPanel({ kata }: Props) {
+export function DescriptionPanel({ kata, hideHistory }: Props) {
   const [tab, setTab] = useState<'description' | 'hints'>('description')
   const [revealedHints, setRevealedHints] = useState(0)
   const hints = kata.hints ?? []
@@ -46,13 +47,15 @@ export function DescriptionPanel({ kata }: Props) {
           Hints
           {hints.length > 0 && <span className="text-muted-foreground ml-1">({hints.length})</span>}
         </button>
-        <Link
-          to="/kata/$slug/submissions"
-          params={{ slug: kata.slug }}
-          className="text-muted-foreground hover:text-foreground ml-1 rounded-md px-3 py-1 text-xs font-medium transition-colors"
-        >
-          History
-        </Link>
+        {!hideHistory && (
+          <Link
+            to="/kata/$slug/submissions"
+            params={{ slug: kata.slug }}
+            className="text-muted-foreground hover:text-foreground ml-1 rounded-md px-3 py-1 text-xs font-medium transition-colors"
+          >
+            History
+          </Link>
+        )}
       </div>
       <div className="flex-1 overflow-auto p-5 text-sm leading-relaxed">
         {tab === 'description' ? (

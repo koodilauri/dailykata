@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { uuidv7 } from 'uuidv7'
 import { createDb } from '#/lib/db'
 import { user, session } from '#/db/schema'
+import { signCookieValue } from '#/lib/cookie'
 
 const TEST_USER_ID = 'test-user-e2e'
 
@@ -60,16 +61,3 @@ export const Route = createFileRoute('/api/auth/test-login')({
     }
   }
 })
-
-async function signCookieValue(value: string, secret: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const key = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  )
-  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(value))
-  return `${value}.${btoa(String.fromCharCode(...new Uint8Array(sig)))}`
-}

@@ -14,7 +14,14 @@ import { clearAllLocal } from '#/lib/local-progress'
 import { getSession } from '#/server/auth'
 import { cancelAccountDeletion, getScheduledDeletion } from '#/server/account'
 import { getNextKata, getUserStats } from '#/server/progress'
-import { createRootRoute, HeadContent, Link, Outlet, Scripts } from '@tanstack/react-router'
+import {
+  createRootRoute,
+  HeadContent,
+  Link,
+  Outlet,
+  Scripts,
+  useRouterState
+} from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { LogOut, Settings, Shield, Terminal } from 'lucide-react'
@@ -92,6 +99,8 @@ function DeletionBanner({ scheduledAt }: { scheduledAt: Date }) {
 
 function RootLayout() {
   const { session, stats, nextKata, scheduledDeletionAt } = Route.useLoaderData()
+  const routerState = useRouterState()
+  const isGatePage = routerState.location.pathname === '/gate'
   const user = session?.user as
     | { role?: string; name?: string | null; email: string; image?: string | null }
     | undefined
@@ -101,6 +110,10 @@ function RootLayout() {
   const level = Math.floor(totalXp / XP_PER_LEVEL) + 1
   const xpIntoLevel = totalXp % XP_PER_LEVEL
   const xpPct = Math.round((xpIntoLevel / XP_PER_LEVEL) * 100)
+
+  if (isGatePage) {
+    return <Outlet />
+  }
 
   return (
     <>
@@ -202,26 +215,14 @@ function RootLayout() {
           )}
 
           {!session && (
-            <div className="ml-1 flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={async () => {
-                  await fetch('/api/auth/demo-login', { method: 'POST' })
-                  window.location.assign('/')
-                }}
-              >
-                Try demo
-              </Button>
-              <Button
-                size="sm"
-                onClick={() =>
-                  signIn.social({ provider: 'github', callbackURL: window.location.pathname })
-                }
-              >
-                Sign in with GitHub
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              onClick={() =>
+                signIn.social({ provider: 'github', callbackURL: window.location.pathname })
+              }
+            >
+              Sign in with GitHub
+            </Button>
           )}
         </div>
       </header>
@@ -283,26 +284,14 @@ function RootLayout() {
               </DropdownMenu>
             </>
           ) : (
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={async () => {
-                  await fetch('/api/auth/demo-login', { method: 'POST' })
-                  window.location.assign('/')
-                }}
-              >
-                Demo
-              </Button>
-              <Button
-                size="sm"
-                onClick={() =>
-                  signIn.social({ provider: 'github', callbackURL: window.location.pathname })
-                }
-              >
-                Sign in
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              onClick={() =>
+                signIn.social({ provider: 'github', callbackURL: window.location.pathname })
+              }
+            >
+              Sign in
+            </Button>
           )}
         </div>
       </header>

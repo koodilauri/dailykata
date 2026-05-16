@@ -1,4 +1,5 @@
 import serverEntry from '@tanstack/react-start/server-entry'
+import { parseCookies, verifyCookieValue } from '#/lib/cookie'
 import { createDb } from '#/lib/db'
 import { account, session, user, userProgress, userStats, xpEvent } from '#/db/schema'
 import { submission } from '#/db/schema/kata'
@@ -26,9 +27,50 @@ async function hardDeleteUser(userId: string, db: Db) {
 }
 
 export default {
-  ...serverEntry,
+  fetch: async (request: Request, env: Record<string, string>, ctx: unknown) => {
+    const url = new URL(request.url)
 
-  async scheduled(_event: ScheduledEvent, _env: unknown, ctx: ExecutionContext) {
+    const alwaysAllowed =
+      url.pathname === '/gate' ||
+      url.pathname.startsWith('/api/auth/demo-login') ||
+      url.pathname.startsWith('/_build') ||
+      url.pathname.startsWith('/__vite') ||
+      url.pathname.startsWith('/favicon') ||
+      url.pathname.startsWith('/@') ||
+      url.pathname.startsWith('/node_modules')
+
+    if (!alwaysAllowed) {
+      const cookies = parseCookies(request.headers.get('Cookie') ?? '')
+      const hasSession = !!cookies['better-auth.session_token']
+      const secret = env.BETA_SECRET ?? ''
+      const hasBeta = secret
+        ? await verifyCookieValue(cookies['beta_access'] ?? '', 'beta', secret)
+        : false
+      const hasDemo = secret
+        ? await verifyCookieValue(cookies['demo_access'] ?? '', 'demo', secret)
+        : false
+
+      if (!hasSession && !hasBeta && !hasDemo) {
+        return Response.redirect(new URL('/gate', url).toString(), 302)
+      }
+
+      if (!hasSession && !hasBeta && hasDemo) {
+        if (!url.pathname.startsWith('/demo')) {
+          return Response.redirect(new URL('/demo', url).toString(), 302)
+        }
+      }
+    }
+
+    return (
+      serverEntry as { fetch: (req: Request, env: unknown, ctx: unknown) => Promise<Response> }
+    ).fetch(request, env, ctx)
+  },
+
+  async scheduled(
+    _event: unknown,
+    _env: unknown,
+    ctx: { waitUntil: (p: Promise<unknown>) => void }
+  ) {
     ctx.waitUntil(
       (async () => {
         const db = createDb()
