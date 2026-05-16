@@ -128,8 +128,8 @@ function Home() {
       {nextKata && (
         <div className="px-5 pb-4">
           <Link
-            to="/kata/$kataId"
-            params={{ kataId: nextKata.id }}
+            to="/kata/$slug"
+            params={{ slug: nextKata.slug }}
             className="flex items-center gap-3.5 rounded-2xl border border-sky-500/25 bg-sky-500/5 p-4 transition-all hover:border-sky-500/40 hover:bg-sky-500/10"
           >
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-500/15 text-2xl">
@@ -159,8 +159,8 @@ function Home() {
             {recentProgress.map(p => (
               <li key={p.kataId}>
                 <Link
-                  to="/kata/$kataId"
-                  params={{ kataId: p.kataId }}
+                  to="/kata/$slug"
+                  params={{ slug: p.kataSlug }}
                   className="border-border bg-card group flex items-center gap-3 rounded-xl border px-4 py-2.5 text-sm transition-all hover:border-emerald-500/30 hover:bg-emerald-500/5"
                 >
                   <span className="text-lg">{difficultyIcon[p.kataDifficulty]}</span>

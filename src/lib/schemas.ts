@@ -4,6 +4,10 @@ export const KataIdSchema = z.object({
   kataId: z.string().min(1)
 })
 
+export const KataSlugSchema = z.object({
+  slug: z.string().min(1)
+})
+
 export const SubmitKataSchema = z.object({
   kataId: z.string().min(1),
   code: z.string().min(1).max(100_000),
@@ -11,6 +15,11 @@ export const SubmitKataSchema = z.object({
 })
 
 export const KataInputSchema = z.object({
+  slug: z
+    .string()
+    .min(1)
+    .max(200)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase letters, numbers and hyphens'),
   title: z.string().min(1).max(200),
   description: z.string().min(1),
   starterCode: z.string().min(1),

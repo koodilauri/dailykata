@@ -5,7 +5,8 @@ interface SidebarContextValue {
   toggle: () => void
   markCompleted: (kataId: string) => void
   completedIds: string[]
-  nextSection: { title: string; firstKataId: string | null } | null
+  nextSection: { title: string; firstKataId: string | null; firstKataSlug: string | null } | null
+  isLoggedIn: boolean
 }
 
 export const SidebarContext = createContext<SidebarContextValue>({
@@ -13,7 +14,8 @@ export const SidebarContext = createContext<SidebarContextValue>({
   toggle: () => {},
   markCompleted: () => {},
   completedIds: [],
-  nextSection: null
+  nextSection: null,
+  isLoggedIn: false
 })
 
 export function useSidebar() {

@@ -2,7 +2,13 @@ import { kata, section } from '#/db/schema'
 import { createAuth } from '#/lib/auth'
 import { createDb } from '#/lib/db'
 import { logger } from '#/lib/logger'
-import { KataIdSchema, KataInputSchema, TogglePublishSchema, UpdateKataSchema } from '#/lib/schemas'
+import {
+  KataIdSchema,
+  KataInputSchema,
+  KataSlugSchema,
+  TogglePublishSchema,
+  UpdateKataSchema
+} from '#/lib/schemas'
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { and, asc, eq } from 'drizzle-orm'
@@ -11,12 +17,12 @@ import { z } from 'zod'
 const log = logger.withTag('kata')
 
 export const getKata = createServerFn({ method: 'GET' })
-  .inputValidator(d => KataIdSchema.parse(d))
+  .inputValidator(d => KataSlugSchema.parse(d))
   .handler(async ({ data }) => {
-    log.debug('getKata', { kataId: data.kataId })
+    log.debug('getKata', { slug: data.slug })
     const db = createDb()
     return db.query.kata.findFirst({
-      where: (k, { and, eq }) => and(eq(k.id, data.kataId), eq(k.published, true))
+      where: (k, { and, eq }) => and(eq(k.slug, data.slug), eq(k.published, true))
     })
   })
 
@@ -24,7 +30,13 @@ export const getKatas = createServerFn({ method: 'GET' }).handler(async () => {
   log.debug('getKatas')
   const db = createDb()
   return db
-    .select({ id: kata.id, title: kata.title, difficulty: kata.difficulty, order: kata.order })
+    .select({
+      id: kata.id,
+      slug: kata.slug,
+      title: kata.title,
+      difficulty: kata.difficulty,
+      order: kata.order
+    })
     .from(kata)
     .leftJoin(section, eq(kata.sectionId, section.id))
     .where(eq(kata.published, true))
@@ -40,6 +52,7 @@ export const getSections = createServerFn({ method: 'GET' }).handler(async () =>
       sectionTitle: section.title,
       sectionOrder: section.order,
       kataId: kata.id,
+      kataSlug: kata.slug,
       kataTitle: kata.title,
       kataDifficulty: kata.difficulty,
       kataOrder: kata.order
@@ -54,7 +67,13 @@ export const getSections = createServerFn({ method: 'GET' }).handler(async () =>
       id: string
       title: string
       order: number
-      katas: { id: string; title: string; difficulty: 'easy' | 'medium' | 'hard'; order: number }[]
+      katas: {
+        id: string
+        slug: string
+        title: string
+        difficulty: 'easy' | 'medium' | 'hard'
+        order: number
+      }[]
     }
   >()
   for (const row of rows) {
@@ -69,6 +88,7 @@ export const getSections = createServerFn({ method: 'GET' }).handler(async () =>
     if (row.kataId) {
       sectionMap.get(row.sectionId)!.katas.push({
         id: row.kataId,
+        slug: row.kataSlug!,
         title: row.kataTitle!,
         difficulty: row.kataDifficulty! as 'easy' | 'medium' | 'hard',
         order: row.kataOrder!
@@ -88,7 +108,7 @@ async function fetchKatasForSection(sectionId: string) {
   return db.query.kata.findMany({
     where: (k, { and, eq }) => and(eq(k.sectionId, sectionId), eq(k.published, true)),
     orderBy: (k, { asc }) => asc(k.order),
-    columns: { id: true, title: true, difficulty: true, order: true }
+    columns: { id: true, slug: true, title: true, difficulty: true, order: true }
   })
 }
 
@@ -106,9 +126,14 @@ async function fetchNextSection(currentSectionId: string) {
   const firstKata = await db.query.kata.findFirst({
     where: (k, { and, eq }) => and(eq(k.sectionId, next.id), eq(k.published, true)),
     orderBy: (k, { asc }) => asc(k.order),
-    columns: { id: true }
+    columns: { id: true, slug: true }
   })
-  return { id: next.id, title: next.title, firstKataId: firstKata?.id ?? null }
+  return {
+    id: next.id,
+    title: next.title,
+    firstKataId: firstKata?.id ?? null,
+    firstKataSlug: firstKata?.slug ?? null
+  }
 }
 
 export const getKatasForSection = createServerFn({ method: 'GET' })

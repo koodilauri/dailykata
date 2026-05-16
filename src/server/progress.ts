@@ -31,6 +31,7 @@ export const getUserProgress = createServerFn({ method: 'GET' }).handler(async (
       completed: userProgress.completed,
       xpEarned: userProgress.xpEarned,
       lastAttemptAt: userProgress.lastAttemptAt,
+      kataSlug: kata.slug,
       kataTitle: kata.title,
       kataDifficulty: kata.difficulty,
       kataOrder: kata.order
@@ -53,7 +54,7 @@ export const getNextKata = createServerFn({ method: 'GET' }).handler(async () =>
     .where(and(eq(userProgress.userId, session.user.id), eq(userProgress.completed, true)))
   const completedSet = new Set(completed.map(r => r.kataId))
   const katas = await db
-    .select({ id: kata.id, title: kata.title })
+    .select({ id: kata.id, slug: kata.slug, title: kata.title })
     .from(kata)
     .leftJoin(section, eq(kata.sectionId, section.id))
     .where(eq(kata.published, true))
