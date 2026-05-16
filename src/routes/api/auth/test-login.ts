@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { uuidv7 } from 'uuidv7'
 import { createDb } from '#/lib/db'
 import { user, session } from '#/db/schema'
 
@@ -30,8 +31,8 @@ export const Route = createFileRoute('/api/auth/test-login')({
             set: { updatedAt: new Date() }
           })
 
-        const token = crypto.randomUUID().replace(/-/g, '')
-        const sessionId = crypto.randomUUID()
+        const token = uuidv7().replace(/-/g, '')
+        const sessionId = uuidv7()
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
 
         await db.insert(session).values({

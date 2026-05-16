@@ -1,4 +1,5 @@
 import { boolean, date, integer, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { uuidv7 } from 'uuidv7'
 import { user } from './auth'
 
 export const difficultyEnum = pgEnum('difficulty', ['easy', 'medium', 'hard'])
@@ -12,7 +13,8 @@ export const section = pgTable('section', {
 export const kata = pgTable('kata', {
   id: text('id')
     .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
+    .$defaultFn(() => uuidv7()),
+  slug: text('slug').notNull().unique(),
   title: text('title').notNull(),
   description: text('description').notNull(),
   starterCode: text('starter_code').notNull(),
@@ -29,7 +31,7 @@ export const kata = pgTable('kata', {
 export const submission = pgTable('submission', {
   id: text('id')
     .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
+    .$defaultFn(() => uuidv7()),
   userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
@@ -66,7 +68,7 @@ export const userStats = pgTable('user_stats', {
 export const xpEvent = pgTable('xp_event', {
   id: text('id')
     .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
+    .$defaultFn(() => uuidv7()),
   userId: text('user_id')
     .notNull()
     .references(() => user.id),
