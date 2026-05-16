@@ -66,7 +66,11 @@ export function KataEditor({ kata, katas }: Props) {
   )
   const [mobileTab, setMobileTab] = useState<MobileTab>('description')
   const [resultsCollapsed, setResultsCollapsed] = useState(false)
-  const [initialCode] = useState(() => localStorage.getItem(draftKey(kata.id)) ?? kata.starterCode)
+  const [initialCode] = useState(() =>
+    typeof window !== 'undefined'
+      ? (localStorage.getItem(draftKey(kata.id)) ?? kata.starterCode)
+      : kata.starterCode
+  )
 
   const hasResults = results !== null || running || error !== null
 

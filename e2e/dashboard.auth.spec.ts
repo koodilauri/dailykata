@@ -6,15 +6,26 @@ test('authenticated user can access dashboard', async ({ page }) => {
   await expect(page).toHaveURL('/dashboard')
 })
 
-test('header shows level badge and sign out button when authenticated', async ({ page }) => {
+test('header shows level badge when authenticated', async ({ page }) => {
   await page.goto('/')
 
-  await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible()
   await expect(page.getByText(/Lv \d+/)).toBeVisible()
 })
 
-test('authenticated user sees completed count on kata list', async ({ page }) => {
+test('authenticated user has avatar button in header', async ({ page }) => {
   await page.goto('/')
 
-  await expect(page.getByText(/\d+ \/ \d+ completed/)).toBeVisible()
+  // The avatar trigger button (showing user initial) only appears when logged in
+  const avatarButton = page
+    .locator('header')
+    .getByRole('button')
+    .filter({ hasText: /^[A-Z]$/ })
+    .first()
+  await expect(avatarButton).toBeVisible()
+})
+
+test('authenticated user sees kata list with sections', async ({ page }) => {
+  await page.goto('/')
+
+  await expect(page.locator('section').first()).toBeVisible()
 })

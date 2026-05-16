@@ -19,6 +19,7 @@ import { Route as AdminNewRouteImport } from './routes/admin/new'
 import { Route as ApiSubmissionsIndexRouteImport } from './routes/api/submissions/index'
 import { Route as KataSlugSubmissionsRouteImport } from './routes/kata/$slug_.submissions'
 import { Route as ApiAuthTestLoginRouteImport } from './routes/api/auth/test-login'
+import { Route as ApiAuthDemoLoginRouteImport } from './routes/api/auth/demo-login'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AdminKataIdEditRouteImport } from './routes/admin/$kataId.edit'
 import { Route as ApiAdminKatasIndexRouteImport } from './routes/api/admin/katas/index'
@@ -74,6 +75,11 @@ const ApiAuthTestLoginRoute = ApiAuthTestLoginRouteImport.update({
   path: '/api/auth/test-login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthDemoLoginRoute = ApiAuthDemoLoginRouteImport.update({
+  id: '/api/auth/demo-login',
+  path: '/api/auth/demo-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/demo-login': typeof ApiAuthDemoLoginRoute
   '/api/auth/test-login': typeof ApiAuthTestLoginRoute
   '/kata/$slug/submissions': typeof KataSlugSubmissionsRoute
   '/api/submissions/': typeof ApiSubmissionsIndexRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/demo-login': typeof ApiAuthDemoLoginRoute
   '/api/auth/test-login': typeof ApiAuthTestLoginRoute
   '/kata/$slug/submissions': typeof KataSlugSubmissionsRoute
   '/api/submissions': typeof ApiSubmissionsIndexRoute
@@ -138,6 +146,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/demo-login': typeof ApiAuthDemoLoginRoute
   '/api/auth/test-login': typeof ApiAuthTestLoginRoute
   '/kata/$slug_/submissions': typeof KataSlugSubmissionsRoute
   '/api/submissions/': typeof ApiSubmissionsIndexRoute
@@ -156,6 +165,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/$kataId/edit'
     | '/api/auth/$'
+    | '/api/auth/demo-login'
     | '/api/auth/test-login'
     | '/kata/$slug/submissions'
     | '/api/submissions/'
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/$kataId/edit'
     | '/api/auth/$'
+    | '/api/auth/demo-login'
     | '/api/auth/test-login'
     | '/kata/$slug/submissions'
     | '/api/submissions'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/$kataId/edit'
     | '/api/auth/$'
+    | '/api/auth/demo-login'
     | '/api/auth/test-login'
     | '/kata/$slug_/submissions'
     | '/api/submissions/'
@@ -204,6 +216,7 @@ export interface RootRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminKataIdEditRoute: typeof AdminKataIdEditRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiAuthDemoLoginRoute: typeof ApiAuthDemoLoginRoute
   ApiAuthTestLoginRoute: typeof ApiAuthTestLoginRoute
   ApiSubmissionsIndexRoute: typeof ApiSubmissionsIndexRoute
   ApiAdminKatasKataIdRoute: typeof ApiAdminKatasKataIdRoute
@@ -282,6 +295,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthTestLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/demo-login': {
+      id: '/api/auth/demo-login'
+      path: '/api/auth/demo-login'
+      fullPath: '/api/auth/demo-login'
+      preLoaderRoute: typeof ApiAuthDemoLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -336,6 +356,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminKataIdEditRoute: AdminKataIdEditRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiAuthDemoLoginRoute: ApiAuthDemoLoginRoute,
   ApiAuthTestLoginRoute: ApiAuthTestLoginRoute,
   ApiSubmissionsIndexRoute: ApiSubmissionsIndexRoute,
   ApiAdminKatasKataIdRoute: ApiAdminKatasKataIdRoute,

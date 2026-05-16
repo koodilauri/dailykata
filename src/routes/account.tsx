@@ -3,10 +3,11 @@ import { cn } from '#/lib/utils'
 import { clearAllLocal } from '#/lib/local-progress'
 import { getSession } from '#/server/auth'
 import { getUserStats } from '#/server/progress'
-import { scheduleAccountDeletion, cancelAccountDeletion } from '#/server/account'
-import { createDb } from '#/lib/db'
-import { user as userTable } from '#/db/schema'
-import { eq } from 'drizzle-orm'
+import {
+  scheduleAccountDeletion,
+  cancelAccountDeletion,
+  getScheduledDeletion
+} from '#/server/account'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
@@ -26,17 +27,9 @@ export const Route = createFileRoute('/account')({
     if (!session) throw redirect({ to: '/' })
     return { session }
   },
-  loader: async ({ context }) => {
-    const session = context.session
-    const db = createDb()
-    const [stats, row] = await Promise.all([
-      getUserStats(),
-      db.query.user.findFirst({
-        where: (u, { eq }) => eq(u.id, session.user.id),
-        columns: { scheduledDeletionAt: true }
-      })
-    ])
-    return { stats, scheduledDeletionAt: row?.scheduledDeletionAt ?? null }
+  loader: async () => {
+    const [stats, scheduledDeletionAt] = await Promise.all([getUserStats(), getScheduledDeletion()])
+    return { stats, scheduledDeletionAt }
   },
   component: Account
 })

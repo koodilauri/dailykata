@@ -12,10 +12,7 @@ import { BottomNav } from '#/components/layout/BottomNav'
 import { signIn, signOut } from '#/lib/auth-client'
 import { clearAllLocal } from '#/lib/local-progress'
 import { getSession } from '#/server/auth'
-import { cancelAccountDeletion } from '#/server/account'
-import { createDb } from '#/lib/db'
-import { user as userTable } from '#/db/schema'
-import { eq } from 'drizzle-orm'
+import { cancelAccountDeletion, getScheduledDeletion } from '#/server/account'
 import { getNextKata, getUserStats } from '#/server/progress'
 import { createRootRoute, HeadContent, Link, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
@@ -28,20 +25,12 @@ const XP_PER_LEVEL = 500
 
 export const Route = createRootRoute({
   loader: async () => {
-    const [session, stats, nextKata] = await Promise.all([
+    const [session, stats, nextKata, scheduledDeletionAt] = await Promise.all([
       getSession(),
       getUserStats(),
-      getNextKata()
+      getNextKata(),
+      getScheduledDeletion()
     ])
-    let scheduledDeletionAt: Date | null = null
-    if (session) {
-      const db = createDb()
-      const row = await db.query.user.findFirst({
-        where: (u, { eq }) => eq(u.id, session.user.id),
-        columns: { scheduledDeletionAt: true }
-      })
-      scheduledDeletionAt = row?.scheduledDeletionAt ?? null
-    }
     return { session, stats, nextKata, scheduledDeletionAt }
   },
   head: () => ({
@@ -213,15 +202,26 @@ function RootLayout() {
           )}
 
           {!session && (
-            <Button
-              size="sm"
-              className="ml-1"
-              onClick={() =>
-                signIn.social({ provider: 'github', callbackURL: window.location.pathname })
-              }
-            >
-              Sign in with GitHub
-            </Button>
+            <div className="ml-1 flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  await fetch('/api/auth/demo-login', { method: 'POST' })
+                  window.location.assign('/')
+                }}
+              >
+                Try demo
+              </Button>
+              <Button
+                size="sm"
+                onClick={() =>
+                  signIn.social({ provider: 'github', callbackURL: window.location.pathname })
+                }
+              >
+                Sign in with GitHub
+              </Button>
+            </div>
           )}
         </div>
       </header>
@@ -283,14 +283,26 @@ function RootLayout() {
               </DropdownMenu>
             </>
           ) : (
-            <Button
-              size="sm"
-              onClick={() =>
-                signIn.social({ provider: 'github', callbackURL: window.location.pathname })
-              }
-            >
-              Sign in
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  await fetch('/api/auth/demo-login', { method: 'POST' })
+                  window.location.assign('/')
+                }}
+              >
+                Demo
+              </Button>
+              <Button
+                size="sm"
+                onClick={() =>
+                  signIn.social({ provider: 'github', callbackURL: window.location.pathname })
+                }
+              >
+                Sign in
+              </Button>
+            </div>
           )}
         </div>
       </header>
