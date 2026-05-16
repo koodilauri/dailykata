@@ -1,6 +1,7 @@
 import { KataSidebar } from '#/components/editor/KataSidebar'
 import { SidebarContext } from '#/components/editor/sidebar-context'
 import { createFileRoute, Outlet, useRouterState } from '@tanstack/react-router'
+import { getLocalCompleted } from '#/lib/local-progress'
 import { useEffect, useState } from 'react'
 
 const NARROW_BREAKPOINT = 1000
@@ -9,6 +10,7 @@ type SidebarData = {
   kata: { id: string }
   sectionKatas: Array<{
     id: string
+    slug: string
     title: string
     difficulty: 'easy' | 'medium' | 'hard'
     order: number
@@ -16,26 +18,43 @@ type SidebarData = {
   sectionId: string | null
   completedIds: string[]
   sectionComplete: boolean
-  nextSection: { id: string; title: string; firstKataId: string | null } | null
+  nextSection: {
+    id: string
+    title: string
+    firstKataId: string | null
+    firstKataSlug: string | null
+  } | null
 }
 
 function KataLayout() {
   const routerState = useRouterState()
+  const rootData = routerState.matches.find(m => m.routeId === '__root__')?.loaderData as
+    | { session: unknown }
+    | undefined
+  const isLoggedIn = !!rootData?.session
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [isNarrow, setIsNarrow] = useState(false)
 
   const isKataRoute =
-    routerState.matches.some(m => m.routeId === '/kata/$kataId') ||
-    (routerState.pendingMatches?.some(m => m.routeId === '/kata/$kataId') ?? false)
+    routerState.matches.some(m => m.routeId === '/kata/$slug') ||
+    (routerState.pendingMatches?.some(m => m.routeId === '/kata/$slug') ?? false)
 
-  const loaderData = routerState.matches.find(m => m.routeId === '/kata/$kataId')?.loaderData as
+  const loaderData = routerState.matches.find(m => m.routeId === '/kata/$slug')?.loaderData as
     | SidebarData
     | undefined
 
   const [sidebarData, setSidebarData] = useState<SidebarData | undefined>(loaderData)
 
   useEffect(() => {
-    if (loaderData) setSidebarData(loaderData)
+    if (loaderData) {
+      const local = getLocalCompleted()
+      setSidebarData({
+        ...loaderData,
+        completedIds: local.length
+          ? [...new Set([...loaderData.completedIds, ...local])]
+          : loaderData.completedIds
+      })
+    }
   }, [loaderData])
 
   useEffect(() => {
@@ -83,7 +102,8 @@ function KataLayout() {
         toggle: () => setSidebarOpen(o => !o),
         markCompleted,
         completedIds: sidebarData?.completedIds ?? [],
-        nextSection: sidebarData?.nextSection ?? null
+        nextSection: sidebarData?.nextSection ?? null,
+        isLoggedIn
       }}
     >
       <div className="relative flex h-[calc(100vh-3rem-4rem)] md:h-[calc(100vh-3rem)]">

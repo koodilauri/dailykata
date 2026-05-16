@@ -1,4 +1,5 @@
 import { cn } from '#/lib/utils'
+import { getLocalCompleted } from '#/lib/local-progress'
 import { getSections } from '#/server/kata'
 import { getUserProgress } from '#/server/progress'
 import { createFileRoute, Link } from '@tanstack/react-router'
@@ -27,7 +28,15 @@ const difficultyIconBg: Record<string, string> = {
 
 function KataList() {
   const { sections, progress } = Route.useLoaderData()
-  const completedIds = new Set(progress.map(p => p.kataId))
+  const [localCompleted, setLocalCompleted] = useState<Set<string>>(new Set())
+  useEffect(() => {
+    setLocalCompleted(new Set(getLocalCompleted()))
+  }, [])
+
+  const serverCompleted = new Set(progress.map(p => p.kataId))
+  const completedIds = localCompleted.size
+    ? new Set([...serverCompleted, ...localCompleted])
+    : serverCompleted
   const nextKataId = sections.flatMap(s => s.katas).find(k => !completedIds.has(k.id))?.id ?? null
 
   const nextKataRef = useRef<HTMLLIElement>(null)
@@ -102,8 +111,8 @@ function KataList() {
                       style={{ animationDelay: `${i * 30}ms` }}
                     >
                       <Link
-                        to="/kata/$kataId"
-                        params={{ kataId: kata.id }}
+                        to="/kata/$slug"
+                        params={{ slug: kata.slug }}
                         className={cn(
                           'group relative flex items-center gap-3.5 overflow-hidden rounded-2xl border p-4 transition-all duration-200',
                           done
