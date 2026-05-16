@@ -1,7 +1,12 @@
 import { useState } from 'react'
 import { cn } from '#/lib/utils'
+import { clearAllLocal } from '#/lib/local-progress'
 import { getSession } from '#/server/auth'
-import { deleteAccount, getUserStats } from '#/server/progress'
+import { getUserStats } from '#/server/progress'
+import { scheduleAccountDeletion, cancelAccountDeletion } from '#/server/account'
+import { createDb } from '#/lib/db'
+import { user as userTable } from '#/db/schema'
+import { eq } from 'drizzle-orm'
 import { Button } from '#/components/ui/button'
 import {
   Dialog,
@@ -13,7 +18,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from '#/components/ui/dialog'
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/account')({
   beforeLoad: async () => {
@@ -21,7 +26,18 @@ export const Route = createFileRoute('/account')({
     if (!session) throw redirect({ to: '/' })
     return { session }
   },
-  loader: async () => ({ stats: await getUserStats() }),
+  loader: async ({ context }) => {
+    const session = context.session
+    const db = createDb()
+    const [stats, row] = await Promise.all([
+      getUserStats(),
+      db.query.user.findFirst({
+        where: (u, { eq }) => eq(u.id, session.user.id),
+        columns: { scheduledDeletionAt: true }
+      })
+    ])
+    return { stats, scheduledDeletionAt: row?.scheduledDeletionAt ?? null }
+  },
   component: Account
 })
 
@@ -38,9 +54,11 @@ const levelTitles: Record<number, string> = {
 }
 
 function Account() {
-  const { stats } = Route.useLoaderData()
+  const { stats, scheduledDeletionAt } = Route.useLoaderData()
   const { session } = Route.useRouteContext()
-  const [deleting, setDeleting] = useState(false)
+  const router = useRouter()
+  const [scheduling, setScheduling] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
 
   const totalXp = stats?.totalXp ?? 0
   const currentStreak = stats?.currentStreak ?? 0
@@ -52,6 +70,14 @@ function Account() {
 
   const name = session.user.name ?? session.user.email.split('@')[0]
   const initial = name[0].toUpperCase()
+
+  const deletionDate = scheduledDeletionAt
+    ? new Date(scheduledDeletionAt).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    : null
 
   return (
     <div className="mx-auto max-w-lg px-4 py-6">
@@ -100,40 +126,79 @@ function Account() {
       {/* Danger zone */}
       <div className="border-destructive/30 bg-card rounded-2xl border p-4">
         <h2 className="text-destructive text-sm font-semibold">Danger zone</h2>
-        <p className="text-muted-foreground mt-1 text-xs">
-          Permanently delete your account and all progress. This cannot be undone.
-        </p>
-        <Dialog>
-          <DialogTrigger
-            render={
-              <Button variant="destructive" size="sm" className="mt-3">
-                Delete account
-              </Button>
-            }
-          />
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete your account?</DialogTitle>
-              <DialogDescription>
-                All your progress, XP, and stats will be permanently deleted. This cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
-              <Button
-                variant="destructive"
-                disabled={deleting}
-                onClick={async () => {
-                  setDeleting(true)
-                  await deleteAccount()
-                  window.location.assign('/')
-                }}
-              >
-                {deleting ? 'Deleting...' : 'Yes, delete my account'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+
+        {scheduledDeletionAt ? (
+          /* State B — deletion pending */
+          <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/8 p-3">
+            <p className="text-sm font-semibold text-amber-400">Account marked for deletion</p>
+            <p className="text-muted-foreground mt-1 text-xs">
+              Your account and all data will be permanently deleted on {deletionDate}. Sign in
+              before then to cancel.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 hover:text-amber-400"
+              disabled={cancelling}
+              onClick={async () => {
+                setCancelling(true)
+                await cancelAccountDeletion()
+                await router.invalidate()
+                setCancelling(false)
+              }}
+            >
+              {cancelling ? 'Cancelling…' : 'Cancel deletion'}
+            </Button>
+          </div>
+        ) : (
+          /* State A — no pending deletion */
+          <>
+            <p className="text-muted-foreground mt-1 text-xs">
+              Schedule your account for deletion. You have 14 days to cancel before all data is
+              permanently removed.
+            </p>
+            <Dialog>
+              <DialogTrigger
+                render={
+                  <Button variant="destructive" size="sm" className="mt-3">
+                    Delete account
+                  </Button>
+                }
+              />
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Schedule account deletion?</DialogTitle>
+                  <DialogDescription>
+                    Your account will be permanently deleted on{' '}
+                    <strong>
+                      {new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString(
+                        undefined,
+                        { year: 'numeric', month: 'long', day: 'numeric' }
+                      )}
+                    </strong>
+                    . You can cancel at any time before then by signing back in.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+                  <Button
+                    variant="destructive"
+                    disabled={scheduling}
+                    onClick={async () => {
+                      setScheduling(true)
+                      await scheduleAccountDeletion()
+                      clearAllLocal()
+                      await router.invalidate()
+                      setScheduling(false)
+                    }}
+                  >
+                    {scheduling ? 'Scheduling…' : 'Schedule deletion'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
       </div>
     </div>
   )

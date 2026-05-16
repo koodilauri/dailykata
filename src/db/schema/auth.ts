@@ -7,6 +7,7 @@ export const user = pgTable('user', {
   emailVerified: boolean('email_verified').notNull(),
   image: text('image'),
   role: text('role').notNull().default('user'), // 'user' | 'admin'
+  scheduledDeletionAt: timestamp('scheduled_deletion_at'),
   createdAt: timestamp('created_at').notNull(),
   updatedAt: timestamp('updated_at').notNull()
 })

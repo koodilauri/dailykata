@@ -4,10 +4,13 @@
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
   "keep_vars": true,
-  "main": "@tanstack/react-start/server-entry",
+  "main": "src/worker.ts",
+  "triggers": {
+    "crons": ["0 3 * * *"]
+  },
   "vars": {
-    "BETTER_AUTH_URL": "https://dailykata.kata-weekly.workers.dev",
-    "VITE_BETTER_AUTH_URL": "https://dailykata.kata-weekly.workers.dev"
+    "BETTER_AUTH_URL": "https://dailykata.lako.workers.dev",
+    "VITE_BETTER_AUTH_URL": "https://dailykata.lako.workers.dev"
   },
   "observability": {
     "enabled": false,
