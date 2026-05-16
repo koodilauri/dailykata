@@ -14,10 +14,10 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as KataRouteRouteImport } from './routes/kata/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
-import { Route as KataKataIdRouteImport } from './routes/kata/$kataId'
+import { Route as KataSlugRouteImport } from './routes/kata/$slug'
 import { Route as AdminNewRouteImport } from './routes/admin/new'
 import { Route as ApiSubmissionsIndexRouteImport } from './routes/api/submissions/index'
-import { Route as KataKataIdSubmissionsRouteImport } from './routes/kata/$kataId_.submissions'
+import { Route as KataSlugSubmissionsRouteImport } from './routes/kata/$slug_.submissions'
 import { Route as ApiAuthTestLoginRouteImport } from './routes/api/auth/test-login'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AdminKataIdEditRouteImport } from './routes/admin/$kataId.edit'
@@ -49,9 +49,9 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const KataKataIdRoute = KataKataIdRouteImport.update({
-  id: '/$kataId',
-  path: '/$kataId',
+const KataSlugRoute = KataSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
   getParentRoute: () => KataRouteRoute,
 } as any)
 const AdminNewRoute = AdminNewRouteImport.update({
@@ -64,9 +64,9 @@ const ApiSubmissionsIndexRoute = ApiSubmissionsIndexRouteImport.update({
   path: '/api/submissions/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const KataKataIdSubmissionsRoute = KataKataIdSubmissionsRouteImport.update({
-  id: '/$kataId_/submissions',
-  path: '/$kataId/submissions',
+const KataSlugSubmissionsRoute = KataSlugSubmissionsRouteImport.update({
+  id: '/$slug_/submissions',
+  path: '/$slug/submissions',
   getParentRoute: () => KataRouteRoute,
 } as any)
 const ApiAuthTestLoginRoute = ApiAuthTestLoginRouteImport.update({
@@ -101,12 +101,12 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRoute
   '/dashboard': typeof DashboardRoute
   '/admin/new': typeof AdminNewRoute
-  '/kata/$kataId': typeof KataKataIdRoute
+  '/kata/$slug': typeof KataSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/auth/test-login': typeof ApiAuthTestLoginRoute
-  '/kata/$kataId/submissions': typeof KataKataIdSubmissionsRoute
+  '/kata/$slug/submissions': typeof KataSlugSubmissionsRoute
   '/api/submissions/': typeof ApiSubmissionsIndexRoute
   '/api/admin/katas/$kataId': typeof ApiAdminKatasKataIdRoute
   '/api/admin/katas/': typeof ApiAdminKatasIndexRoute
@@ -117,12 +117,12 @@ export interface FileRoutesByTo {
   '/account': typeof AccountRoute
   '/dashboard': typeof DashboardRoute
   '/admin/new': typeof AdminNewRoute
-  '/kata/$kataId': typeof KataKataIdRoute
+  '/kata/$slug': typeof KataSlugRoute
   '/admin': typeof AdminIndexRoute
   '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/auth/test-login': typeof ApiAuthTestLoginRoute
-  '/kata/$kataId/submissions': typeof KataKataIdSubmissionsRoute
+  '/kata/$slug/submissions': typeof KataSlugSubmissionsRoute
   '/api/submissions': typeof ApiSubmissionsIndexRoute
   '/api/admin/katas/$kataId': typeof ApiAdminKatasKataIdRoute
   '/api/admin/katas': typeof ApiAdminKatasIndexRoute
@@ -134,12 +134,12 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/dashboard': typeof DashboardRoute
   '/admin/new': typeof AdminNewRoute
-  '/kata/$kataId': typeof KataKataIdRoute
+  '/kata/$slug': typeof KataSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/$kataId/edit': typeof AdminKataIdEditRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/auth/test-login': typeof ApiAuthTestLoginRoute
-  '/kata/$kataId_/submissions': typeof KataKataIdSubmissionsRoute
+  '/kata/$slug_/submissions': typeof KataSlugSubmissionsRoute
   '/api/submissions/': typeof ApiSubmissionsIndexRoute
   '/api/admin/katas/$kataId': typeof ApiAdminKatasKataIdRoute
   '/api/admin/katas/': typeof ApiAdminKatasIndexRoute
@@ -152,12 +152,12 @@ export interface FileRouteTypes {
     | '/account'
     | '/dashboard'
     | '/admin/new'
-    | '/kata/$kataId'
+    | '/kata/$slug'
     | '/admin/'
     | '/admin/$kataId/edit'
     | '/api/auth/$'
     | '/api/auth/test-login'
-    | '/kata/$kataId/submissions'
+    | '/kata/$slug/submissions'
     | '/api/submissions/'
     | '/api/admin/katas/$kataId'
     | '/api/admin/katas/'
@@ -168,12 +168,12 @@ export interface FileRouteTypes {
     | '/account'
     | '/dashboard'
     | '/admin/new'
-    | '/kata/$kataId'
+    | '/kata/$slug'
     | '/admin'
     | '/admin/$kataId/edit'
     | '/api/auth/$'
     | '/api/auth/test-login'
-    | '/kata/$kataId/submissions'
+    | '/kata/$slug/submissions'
     | '/api/submissions'
     | '/api/admin/katas/$kataId'
     | '/api/admin/katas'
@@ -184,12 +184,12 @@ export interface FileRouteTypes {
     | '/account'
     | '/dashboard'
     | '/admin/new'
-    | '/kata/$kataId'
+    | '/kata/$slug'
     | '/admin/'
     | '/admin/$kataId/edit'
     | '/api/auth/$'
     | '/api/auth/test-login'
-    | '/kata/$kataId_/submissions'
+    | '/kata/$slug_/submissions'
     | '/api/submissions/'
     | '/api/admin/katas/$kataId'
     | '/api/admin/katas/'
@@ -247,11 +247,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/kata/$kataId': {
-      id: '/kata/$kataId'
-      path: '/$kataId'
-      fullPath: '/kata/$kataId'
-      preLoaderRoute: typeof KataKataIdRouteImport
+    '/kata/$slug': {
+      id: '/kata/$slug'
+      path: '/$slug'
+      fullPath: '/kata/$slug'
+      preLoaderRoute: typeof KataSlugRouteImport
       parentRoute: typeof KataRouteRoute
     }
     '/admin/new': {
@@ -268,11 +268,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSubmissionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/kata/$kataId_/submissions': {
-      id: '/kata/$kataId_/submissions'
-      path: '/$kataId/submissions'
-      fullPath: '/kata/$kataId/submissions'
-      preLoaderRoute: typeof KataKataIdSubmissionsRouteImport
+    '/kata/$slug_/submissions': {
+      id: '/kata/$slug_/submissions'
+      path: '/$slug/submissions'
+      fullPath: '/kata/$slug/submissions'
+      preLoaderRoute: typeof KataSlugSubmissionsRouteImport
       parentRoute: typeof KataRouteRoute
     }
     '/api/auth/test-login': {
@@ -314,13 +314,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface KataRouteRouteChildren {
-  KataKataIdRoute: typeof KataKataIdRoute
-  KataKataIdSubmissionsRoute: typeof KataKataIdSubmissionsRoute
+  KataSlugRoute: typeof KataSlugRoute
+  KataSlugSubmissionsRoute: typeof KataSlugSubmissionsRoute
 }
 
 const KataRouteRouteChildren: KataRouteRouteChildren = {
-  KataKataIdRoute: KataKataIdRoute,
-  KataKataIdSubmissionsRoute: KataKataIdSubmissionsRoute,
+  KataSlugRoute: KataSlugRoute,
+  KataSlugSubmissionsRoute: KataSlugSubmissionsRoute,
 }
 
 const KataRouteRouteWithChildren = KataRouteRoute._addFileChildren(

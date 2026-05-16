@@ -5,17 +5,15 @@ import { createFileRoute, Link, notFound, redirect } from '@tanstack/react-route
 import { getSession } from '#/server/auth'
 import { ArrowLeft } from 'lucide-react'
 
-export const Route = createFileRoute('/kata/$kataId_/submissions')({
+export const Route = createFileRoute('/kata/$slug_/submissions')({
   beforeLoad: async () => {
     const session = await getSession()
     if (!session) throw redirect({ to: '/' })
   },
   loader: async ({ params }) => {
-    const [kata, submissions] = await Promise.all([
-      getKata({ data: { kataId: params.kataId } }),
-      getKataSubmissions({ data: { kataId: params.kataId } })
-    ])
+    const kata = await getKata({ data: { slug: params.slug } })
     if (!kata) throw notFound()
+    const submissions = await getKataSubmissions({ data: { kataId: kata.id } })
     return { kata, submissions }
   },
   notFoundComponent: () => (
@@ -32,8 +30,8 @@ function SubmissionsPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <Link
-        to="/kata/$kataId"
-        params={{ kataId: kata.id }}
+        to="/kata/$slug"
+        params={{ slug: kata.slug }}
         className="text-muted-foreground hover:text-foreground mb-6 flex items-center gap-1 text-sm transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />

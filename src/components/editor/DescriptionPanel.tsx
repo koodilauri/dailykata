@@ -6,7 +6,7 @@ import { Lightbulb } from 'lucide-react'
 import { useState } from 'react'
 
 interface Kata {
-  id: string
+  slug: string
   description: string
   hints: string[] | null
 }
@@ -47,8 +47,8 @@ export function DescriptionPanel({ kata }: Props) {
           {hints.length > 0 && <span className="text-muted-foreground ml-1">({hints.length})</span>}
         </button>
         <Link
-          to="/kata/$kataId/submissions"
-          params={{ kataId: kata.id }}
+          to="/kata/$slug/submissions"
+          params={{ slug: kata.slug }}
           className="text-muted-foreground hover:text-foreground ml-1 rounded-md px-3 py-1 text-xs font-medium transition-colors"
         >
           History

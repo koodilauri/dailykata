@@ -10,6 +10,7 @@ import { Play } from 'lucide-react'
 import { useRef, useState } from 'react'
 
 export interface KataFormData {
+  slug: string
   title: string
   description: string
   starterCode: string
@@ -26,8 +27,16 @@ interface KataFormProps {
   submitLabel: string
 }
 
+function slugify(s: string) {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
 export function KataForm({ initial, onSubmit, submitLabel }: KataFormProps) {
   const [form, setForm] = useState<KataFormData>({
+    slug: initial?.slug ?? '',
     title: initial?.title ?? '',
     description: initial?.description ?? '',
     starterCode: initial?.starterCode ?? '',
@@ -80,7 +89,37 @@ export function KataForm({ initial, onSubmit, submitLabel }: KataFormProps) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       <Field label="Title">
-        <Input value={form.title} onChange={e => set('title', e.target.value)} required />
+        <Input
+          value={form.title}
+          onChange={e => {
+            set('title', e.target.value)
+            if (!initial?.slug) set('slug', slugify(e.target.value))
+          }}
+          required
+        />
+      </Field>
+
+      <Field label="Slug (URL identifier)">
+        <div className="flex gap-2">
+          <Input
+            value={form.slug}
+            onChange={e => set('slug', e.target.value)}
+            pattern="[a-z0-9]+(-[a-z0-9]+)*"
+            title="Lowercase letters, numbers and hyphens only"
+            required
+            className="font-mono text-sm"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => set('slug', slugify(form.title))}
+            className="shrink-0"
+          >
+            Auto
+          </Button>
+        </div>
+        <p className="text-muted-foreground text-[11px]">URL: /kata/{form.slug || '…'}</p>
       </Field>
 
       <Field label="Description (shown to user)">

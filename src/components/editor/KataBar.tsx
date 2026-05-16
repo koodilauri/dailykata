@@ -7,13 +7,14 @@ import { PanelLeft, Play } from 'lucide-react'
 
 interface Kata {
   id: string
+  slug: string
   title: string
   estimatedMinutes: number | null
 }
 
 interface Props {
   kata: Kata
-  katas: Array<{ id: string }>
+  katas: Array<{ id: string; slug: string }>
   running: boolean
   onRun: () => void
 }
@@ -45,7 +46,7 @@ export function KataBar({ kata, katas, running, onRun }: Props) {
       </div>
       <div className="flex shrink-0 gap-2">
         {isCompleted && nextKata && (
-          <Link to="/kata/$kataId" params={{ kataId: nextKata.id }}>
+          <Link to="/kata/$slug" params={{ slug: nextKata.slug }}>
             <Button
               variant="outline"
               size="sm"

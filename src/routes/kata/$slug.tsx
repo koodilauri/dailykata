@@ -4,12 +4,12 @@ import { getUserProgress } from '#/server/progress'
 import { getKata, getKatasForSection, getNextSection } from '#/server/kata'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/kata/$kataId')({
+export const Route = createFileRoute('/kata/$slug')({
   pendingComponent: KataPageSkeleton,
   pendingMs: 0,
   pendingMinMs: 300,
   loader: async ({ params }) => {
-    const kata = await getKata({ data: { kataId: params.kataId } })
+    const kata = await getKata({ data: { slug: params.slug } })
     if (!kata) throw notFound()
 
     const sectionId = kata.sectionId ?? null

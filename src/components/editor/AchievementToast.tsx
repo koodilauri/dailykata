@@ -86,7 +86,7 @@ interface Props {
   sectionId: string | null
   xpEarned: number
   prevXp: number
-  nextKataId: string | null
+  nextKataSlug: string | null
   sectionComplete: boolean
   nextSectionTitle: string | null
   onDismiss: () => void
@@ -98,7 +98,7 @@ export function AchievementToast({
   sectionId,
   xpEarned,
   prevXp,
-  nextKataId,
+  nextKataSlug,
   sectionComplete,
   nextSectionTitle,
   onDismiss
@@ -176,10 +176,10 @@ export function AchievementToast({
         )}
 
         {/* Next action */}
-        {nextKataId ? (
+        {nextKataSlug ? (
           <Link
-            to="/kata/$kataId"
-            params={{ kataId: nextKataId }}
+            to="/kata/$slug"
+            params={{ slug: nextKataSlug }}
             onClick={onDismiss}
             className="w-full rounded-xl border border-sky-500/30 bg-sky-500/15 px-4 py-3 text-sm font-bold text-sky-400 transition hover:bg-sky-500/25"
           >
