@@ -58,7 +58,7 @@ function GatePage() {
           <h1 className="from-foreground to-primary bg-linear-to-r bg-clip-text text-2xl font-bold tracking-tight text-transparent">
             dailykata
           </h1>
-          <p className="text-muted-foreground mt-1 text-sm">Early access</p>
+          <p className="text-muted-foreground mt-1 text-sm">Access key required</p>
         </div>
 
         <form
@@ -71,7 +71,7 @@ function GatePage() {
           <input
             name="password"
             type="password"
-            placeholder="Beta access password"
+            placeholder="Access key"
             autoFocus
             className="border-input bg-background focus-visible:ring-ring w-full rounded-lg border px-3 py-2 text-sm focus-visible:ring-1 focus-visible:outline-none"
           />
@@ -98,7 +98,7 @@ function GatePage() {
             disabled={loading}
             className="border-border text-muted-foreground hover:text-foreground hover:bg-accent w-full rounded-lg border px-4 py-2 text-sm transition-colors disabled:opacity-50"
           >
-            Try demo (no signup) →
+            Try demo (no key) →
           </button>
         </form>
       </div>
