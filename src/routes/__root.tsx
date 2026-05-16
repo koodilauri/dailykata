@@ -10,12 +10,17 @@ import { Toaster } from '#/components/ui/sonner'
 import { TooltipProvider } from '#/components/ui/tooltip'
 import { BottomNav } from '#/components/layout/BottomNav'
 import { signIn, signOut } from '#/lib/auth-client'
+import { clearAllLocal } from '#/lib/local-progress'
 import { getSession } from '#/server/auth'
+import { cancelAccountDeletion } from '#/server/account'
+import { createDb } from '#/lib/db'
+import { user as userTable } from '#/db/schema'
+import { eq } from 'drizzle-orm'
 import { getNextKata, getUserStats } from '#/server/progress'
 import { createRootRoute, HeadContent, Link, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import { Terminal } from 'lucide-react'
+import { LogOut, Settings, Shield, Terminal } from 'lucide-react'
 
 import appCss from '../styles.css?url'
 
@@ -28,7 +33,16 @@ export const Route = createRootRoute({
       getUserStats(),
       getNextKata()
     ])
-    return { session, stats, nextKata }
+    let scheduledDeletionAt: Date | null = null
+    if (session) {
+      const db = createDb()
+      const row = await db.query.user.findFirst({
+        where: (u, { eq }) => eq(u.id, session.user.id),
+        columns: { scheduledDeletionAt: true }
+      })
+      scheduledDeletionAt = row?.scheduledDeletionAt ?? null
+    }
+    return { session, stats, nextKata, scheduledDeletionAt }
   },
   head: () => ({
     meta: [
@@ -63,8 +77,32 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   )
 }
 
+function DeletionBanner({ scheduledAt }: { scheduledAt: Date }) {
+  const date = new Date(scheduledAt).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-amber-500/30 bg-amber-500/10 px-4 py-2.5">
+      <p className="text-xs font-medium text-amber-400">
+        ⚠ Your account is scheduled for deletion on {date}.
+      </p>
+      <button
+        onClick={async () => {
+          await cancelAccountDeletion()
+          window.location.reload()
+        }}
+        className="shrink-0 rounded-md border border-amber-500/40 px-2.5 py-1 text-[11px] font-semibold text-amber-400 transition hover:bg-amber-500/15"
+      >
+        Cancel deletion
+      </button>
+    </div>
+  )
+}
+
 function RootLayout() {
-  const { session, stats, nextKata } = Route.useLoaderData()
+  const { session, stats, nextKata, scheduledDeletionAt } = Route.useLoaderData()
   const user = session?.user as
     | { role?: string; name?: string | null; email: string; image?: string | null }
     | undefined
@@ -99,8 +137,8 @@ function RootLayout() {
               </Link>
               {nextKata && (
                 <Link
-                  to="/kata/$kataId"
-                  params={{ kataId: nextKata.id }}
+                  to="/kata/$slug"
+                  params={{ slug: nextKata.slug }}
                   className="text-muted-foreground hover:text-foreground hover:bg-accent rounded-md px-3 py-1.5 text-sm transition-colors"
                 >
                   Continue
@@ -142,17 +180,31 @@ function RootLayout() {
                     {user.name ?? user.email}
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem render={<Link to="/account" />}>Account</DropdownMenuItem>
+                  <DropdownMenuItem render={<Link to="/account" />}>
+                    <Settings className="h-4 w-4" />
+                    Account
+                  </DropdownMenuItem>
                   {user.role === 'admin' && (
-                    <DropdownMenuItem render={<Link to="/admin" />}>Admin</DropdownMenuItem>
+                    <DropdownMenuItem render={<Link to="/admin" />}>
+                      <Shield className="h-4 w-4" />
+                      Admin
+                    </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     variant="destructive"
                     onClick={() =>
-                      signOut({ fetchOptions: { onSuccess: () => window.location.assign('/') } })
+                      signOut({
+                        fetchOptions: {
+                          onSuccess: () => {
+                            clearAllLocal()
+                            window.location.assign('/')
+                          }
+                        }
+                      })
                     }
                   >
+                    <LogOut className="h-4 w-4" />
                     Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -200,17 +252,31 @@ function RootLayout() {
                     {user.name ?? user.email}
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem render={<Link to="/account" />}>Account</DropdownMenuItem>
+                  <DropdownMenuItem render={<Link to="/account" />}>
+                    <Settings className="h-4 w-4" />
+                    Account
+                  </DropdownMenuItem>
                   {user.role === 'admin' && (
-                    <DropdownMenuItem render={<Link to="/admin" />}>Admin</DropdownMenuItem>
+                    <DropdownMenuItem render={<Link to="/admin" />}>
+                      <Shield className="h-4 w-4" />
+                      Admin
+                    </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     variant="destructive"
                     onClick={() =>
-                      signOut({ fetchOptions: { onSuccess: () => window.location.assign('/') } })
+                      signOut({
+                        fetchOptions: {
+                          onSuccess: () => {
+                            clearAllLocal()
+                            window.location.assign('/')
+                          }
+                        }
+                      })
                     }
                   >
+                    <LogOut className="h-4 w-4" />
                     Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -229,12 +295,14 @@ function RootLayout() {
         </div>
       </header>
 
+      {scheduledDeletionAt && <DeletionBanner scheduledAt={scheduledDeletionAt} />}
+
       {/* Page content — add bottom padding on mobile for bottom nav */}
       <div className="pb-16 md:pb-0">
         <Outlet />
       </div>
 
-      {user && <BottomNav nextKataId={nextKata?.id ?? null} />}
+      <BottomNav nextKataSlug={nextKata?.slug ?? null} isLoggedIn={!!user} />
     </>
   )
 }

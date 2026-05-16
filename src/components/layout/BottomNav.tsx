@@ -1,8 +1,9 @@
 'use client'
 
 import { cn } from '#/lib/utils'
+import { signIn } from '#/lib/auth-client'
 import { Link, useRouterState } from '@tanstack/react-router'
-import { Home, ScrollText, PlayCircle, User } from 'lucide-react'
+import { Home, LogIn, ScrollText, PlayCircle, User } from 'lucide-react'
 
 type NavTabProps = {
   to: string
@@ -39,21 +40,43 @@ function NavTab({ to, label, Icon, active }: NavTabProps) {
   )
 }
 
-export function BottomNav({ nextKataId }: { nextKataId: string | null }) {
-  const pathname = useRouterState({ select: s => s.location.pathname })
+interface Props {
+  nextKataSlug: string | null
+  isLoggedIn: boolean
+}
 
+export function BottomNav({ nextKataSlug, isLoggedIn }: Props) {
+  const pathname = useRouterState({ select: s => s.location.pathname })
   const continueActive = pathname.startsWith('/kata/')
+
+  if (!isLoggedIn) {
+    return (
+      <nav className="border-border bg-card/95 fixed right-0 bottom-0 left-0 z-50 flex h-16 items-start justify-around border-t pt-2 backdrop-blur-sm md:hidden">
+        <NavTab to="/" label="Katas" Icon={ScrollText} active={pathname === '/'} />
+        <button
+          onClick={() =>
+            signIn.social({ provider: 'github', callbackURL: window.location.pathname })
+          }
+          className="flex flex-1 flex-col items-center gap-0.5"
+        >
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-500/15">
+            <LogIn className="h-5 w-5 text-sky-400" />
+          </div>
+          <span className="text-[10px] font-semibold tracking-wide text-sky-400">Sign in</span>
+        </button>
+      </nav>
+    )
+  }
 
   return (
     <nav className="border-border bg-card/95 fixed right-0 bottom-0 left-0 z-50 flex h-16 items-start justify-around border-t pt-2 backdrop-blur-sm md:hidden">
       <NavTab to="/dashboard" label="Home" Icon={Home} active={pathname.startsWith('/dashboard')} />
       <NavTab to="/" label="Katas" Icon={ScrollText} active={pathname === '/'} />
 
-      {/* Continue tab — dynamic link or dimmed placeholder */}
-      {nextKataId ? (
+      {nextKataSlug ? (
         <Link
-          to="/kata/$kataId"
-          params={{ kataId: nextKataId }}
+          to="/kata/$slug"
+          params={{ slug: nextKataSlug }}
           className="flex flex-1 flex-col items-center gap-0.5"
         >
           <div

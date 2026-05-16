@@ -7,11 +7,18 @@ import { cn } from '#/lib/utils'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from '@tanstack/react-router'
 import { useSidebar } from '#/components/editor/sidebar-context'
+import {
+  addLocalCompleted,
+  addPendingSubmission,
+  clearLocalCompleted,
+  getPendingSubmissions,
+  removePendingSubmission
+} from '#/lib/local-progress'
 import { AchievementToast } from './AchievementToast'
 import { CodeEditor, type CodeEditorHandle } from './CodeEditor'
 import { DescriptionPanel } from './DescriptionPanel'
 import { KataBar } from './KataBar'
-import { LoginDialog } from './LoginDialog'
+import { SignInToast } from './SignInToast'
 import { ScrollArea } from '#/components/ui/scroll-area'
 import { TestResults } from './TestResults'
 import { ChevronDown, ChevronUp } from 'lucide-react'
@@ -20,6 +27,7 @@ const draftKey = (kataId: string) => `kata_draft_${kataId}`
 
 interface Kata {
   id: string
+  slug: string
   title: string
   description: string
   starterCode: string
@@ -33,28 +41,26 @@ interface Kata {
 
 interface Props {
   kata: Kata
-  katas: Array<{ id: string }>
+  katas: Array<{ id: string; slug: string }>
 }
-
-const PENDING_SUBMIT_KEY = 'dailykata_pending_submit'
 
 type MobileTab = 'description' | 'code'
 
 export function KataEditor({ kata, katas }: Props) {
   const router = useRouter()
-  const { markCompleted, completedIds, nextSection } = useSidebar()
+  const { markCompleted, completedIds, nextSection, isLoggedIn } = useSidebar()
   const isMobile = useIsMobile()
   const editorRef = useRef<CodeEditorHandle>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [results, setResults] = useState<TestResult[] | null>(null)
   const [running, setRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [loginOpen, setLoginOpen] = useState(false)
+  const [showSignIn, setShowSignIn] = useState(false)
   const [showAchievement, setShowAchievement] = useState(false)
   const [earnedXp, setEarnedXp] = useState(0)
   const [prevXp, setPrevXp] = useState(0)
   const [sectionJustCompleted, setSectionJustCompleted] = useState(false)
-  const [achievementNextKataId, setAchievementNextKataId] = useState<string | null>(null)
+  const [achievementNextKataSlug, setAchievementNextKataSlug] = useState<string | null>(null)
   const [achievementNextSectionTitle, setAchievementNextSectionTitle] = useState<string | null>(
     null
   )
@@ -76,14 +82,25 @@ export function KataEditor({ kata, katas }: Props) {
     []
   )
 
+  // When user signs in, batch-submit all locally pending submissions
   useEffect(() => {
-    const pending = localStorage.getItem(PENDING_SUBMIT_KEY)
-    if (!pending) return
-    const parsed = JSON.parse(pending) as { kataId: string; code: string }
-    if (parsed.kataId !== kata.id) return
-    localStorage.removeItem(PENDING_SUBMIT_KEY)
-    void handleSave(parsed.code, true)
-  }, [kata.id])
+    if (!isLoggedIn) return
+    const pending = getPendingSubmissions()
+    if (!pending.length) return
+    Promise.all(
+      pending.map(async ({ kataId, code }) => {
+        const res = await fetch('/api/submissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ kataId, code, passed: true })
+        })
+        if (res.ok) removePendingSubmission(kataId)
+      })
+    ).then(() => {
+      clearLocalCompleted()
+      void router.invalidate()
+    })
+  }, [isLoggedIn])
 
   async function handleSave(code: string, passed: boolean) {
     const res = await fetch('/api/submissions', {
@@ -93,8 +110,12 @@ export function KataEditor({ kata, katas }: Props) {
     })
 
     if (res.status === 401) {
-      localStorage.setItem(PENDING_SUBMIT_KEY, JSON.stringify({ kataId: kata.id, code }))
-      setLoginOpen(true)
+      addPendingSubmission({ kataId: kata.id, code })
+      if (passed) {
+        addLocalCompleted(kata.id)
+        markCompleted(kata.id)
+        setShowSignIn(true)
+      }
       return
     }
 
@@ -106,8 +127,8 @@ export function KataEditor({ kata, katas }: Props) {
 
         const newCompleted = new Set([...completedIds, kata.id])
         const secDone = katas.length > 0 && katas.every(k => newCompleted.has(k.id))
-        const nextInSection = katas.find(k => !newCompleted.has(k.id))?.id ?? null
-        const nextId = secDone ? (nextSection?.firstKataId ?? null) : nextInSection
+        const nextInSection = katas.find(k => !newCompleted.has(k.id))?.slug ?? null
+        const nextSlug = secDone ? (nextSection?.firstKataSlug ?? null) : nextInSection
 
         markCompleted(kata.id)
         void router.invalidate()
@@ -116,7 +137,7 @@ export function KataEditor({ kata, katas }: Props) {
           setPrevXp(currentXp)
           setEarnedXp(data.xpEarned)
           setSectionJustCompleted(secDone)
-          setAchievementNextKataId(nextId)
+          setAchievementNextKataSlug(nextSlug)
           setAchievementNextSectionTitle(secDone ? (nextSection?.title ?? null) : null)
           setShowAchievement(true)
           setTimeout(() => setShowAchievement(false), 7000)
@@ -248,18 +269,28 @@ export function KataEditor({ kata, katas }: Props) {
         </>
       )}
 
+      {!isLoggedIn && (
+        <SignInToast
+          show={showSignIn}
+          kataTitle={kata.title}
+          nextKataSlug={(() => {
+            const i = katas.findIndex(k => k.id === kata.id)
+            return i >= 0 && i < katas.length - 1 ? katas[i + 1].slug : null
+          })()}
+          onDismiss={() => setShowSignIn(false)}
+        />
+      )}
       <AchievementToast
         show={showAchievement}
         kataTitle={kata.title}
         sectionId={kata.sectionId}
         xpEarned={earnedXp}
         prevXp={prevXp}
-        nextKataId={achievementNextKataId}
+        nextKataSlug={achievementNextKataSlug}
         sectionComplete={sectionJustCompleted}
         nextSectionTitle={achievementNextSectionTitle}
         onDismiss={() => setShowAchievement(false)}
       />
-      <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} kataId={kata.id} />
     </div>
   )
 }
