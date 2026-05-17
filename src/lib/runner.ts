@@ -47,10 +47,16 @@ export function buildIframeDoc(userJs: string, testJs: string): string {
         }
       },
       toEqual: function(expected) {
-        var a = JSON.stringify(actual);
-        var b = JSON.stringify(expected);
-        if (a !== b) {
-          throw new Error('Expected ' + b + ' but got ' + a);
+        function deepEqual(a, b) {
+          if (a === b) return true;
+          if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
+          if (Array.isArray(a) !== Array.isArray(b)) return false;
+          var keysA = Object.keys(a), keysB = Object.keys(b);
+          if (keysA.length !== keysB.length) return false;
+          return keysA.every(function(k) { return Object.prototype.hasOwnProperty.call(b, k) && deepEqual(a[k], b[k]); });
+        }
+        if (!deepEqual(actual, expected)) {
+          throw new Error('Expected ' + JSON.stringify(expected) + ' but got ' + JSON.stringify(actual));
         }
       },
       toBeTruthy: function() {
