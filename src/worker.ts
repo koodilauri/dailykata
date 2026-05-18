@@ -55,7 +55,9 @@ export default {
       }
 
       if (!hasSession && !hasBeta && hasDemo) {
-        if (!url.pathname.startsWith('/demo')) {
+        const isNavigation =
+          request.method === 'GET' && request.headers.get('Accept')?.includes('text/html')
+        if (isNavigation && !url.pathname.startsWith('/demo')) {
           return Response.redirect(new URL('/demo', url).toString(), 302)
         }
       }

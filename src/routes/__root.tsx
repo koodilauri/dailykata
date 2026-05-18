@@ -51,7 +51,7 @@ export const Route = createRootRoute({
       { rel: 'icon', type: 'image/x-icon', href: '/favicon_io/favicon.ico' },
       { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon_io/favicon-32x32.png' },
       { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon_io/favicon-16x16.png' },
-      { rel: 'apple-touch-icon', sizes: '180x180', href: '/favicon_io/apple-touch-icon.png' },
+      { rel: 'apple-touch-icon', sizes: '180x180', href: '/favicon_io/apple-touch-icon.png' }
     ]
   }),
   shellComponent: RootDocument,
@@ -107,6 +107,7 @@ function RootLayout() {
   const { session, stats, nextKata, scheduledDeletionAt } = Route.useLoaderData()
   const routerState = useRouterState()
   const isGatePage = routerState.location.pathname === '/gate'
+  const isDemoPage = routerState.location.pathname.startsWith('/demo')
   const user = session?.user as
     | { role?: string; name?: string | null; email: string; image?: string | null }
     | undefined
@@ -125,7 +126,7 @@ function RootLayout() {
     <>
       {/* Desktop header — hidden on mobile */}
       <header className="border-border bg-card sticky top-0 z-50 hidden h-12 items-center gap-4 border-b px-4 md:flex">
-        <Link to="/dashboard" className="flex items-center gap-2">
+        <Link to={isDemoPage ? '/demo' : '/dashboard'} className="flex items-center gap-2">
           <div className="bg-primary flex h-6 w-6 items-center justify-center rounded-md">
             <Terminal className="text-primary-foreground h-3.5 w-3.5" />
           </div>
@@ -220,7 +221,7 @@ function RootLayout() {
             </>
           )}
 
-          {!session && (
+          {!session && !isDemoPage && (
             <Button
               size="sm"
               onClick={() =>
@@ -235,7 +236,7 @@ function RootLayout() {
 
       {/* Mobile header — shown only on mobile, slim with logo + sign in */}
       <header className="border-border bg-card/95 sticky top-0 z-50 flex h-12 items-center justify-between border-b px-4 backdrop-blur-sm md:hidden">
-        <Link to="/dashboard" className="flex items-center gap-2">
+        <Link to={isDemoPage ? '/demo' : '/dashboard'} className="flex items-center gap-2">
           <div className="bg-primary flex h-6 w-6 items-center justify-center rounded-md">
             <Terminal className="text-primary-foreground h-3.5 w-3.5" />
           </div>
@@ -289,7 +290,7 @@ function RootLayout() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
-          ) : (
+          ) : !isDemoPage ? (
             <Button
               size="sm"
               onClick={() =>
@@ -298,7 +299,7 @@ function RootLayout() {
             >
               Sign in
             </Button>
-          )}
+          ) : null}
         </div>
       </header>
 

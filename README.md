@@ -39,11 +39,11 @@ BETA_SECRET=
 
 The app has a beta gate at `/gate`. Three access levels:
 
-| Cookie | Access |
-|--------|--------|
-| `better-auth.session_token` | Full app (signed in) |
-| `beta_access` | Full app (logged out, entered beta password) |
-| `demo_access` | `/demo/*` only — hard-coded katas, localStorage progress |
+| Cookie                      | Access                                                   |
+| --------------------------- | -------------------------------------------------------- |
+| `better-auth.session_token` | Full app (signed in)                                     |
+| `beta_access`               | Full app (logged out, entered beta password)             |
+| `demo_access`               | `/demo/*` only — hard-coded katas, localStorage progress |
 
 Demo mode uses no database. Progress (XP, streak, completions) is stored in localStorage only.
 

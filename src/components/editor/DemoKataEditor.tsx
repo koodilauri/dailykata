@@ -17,7 +17,7 @@ import { DescriptionPanel } from './DescriptionPanel'
 import { TestResults } from './TestResults'
 import { ScrollArea } from '#/components/ui/scroll-area'
 import { Button } from '#/components/ui/button'
-import { ChevronDown, ChevronUp, Play } from 'lucide-react'
+import { ChevronDown, ChevronUp, ChevronLeft, Play } from 'lucide-react'
 import type { DemoKata } from '#/lib/demo-katas'
 
 const XP_PER_KATA = 100
@@ -37,9 +37,11 @@ export function DemoKataEditor({ kata, katas }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [mobileTab, setMobileTab] = useState<MobileTab>('description')
   const [resultsCollapsed, setResultsCollapsed] = useState(false)
-  const [completed, setCompleted] = useState(
-    () => typeof window !== 'undefined' && getLocalCompleted().includes(kata.id)
+  const [completedIds, setCompletedIds] = useState<string[]>(() =>
+    typeof window !== 'undefined' ? getLocalCompleted() : []
   )
+  const completed = completedIds.includes(kata.id)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
   const [showToast, setShowToast] = useState(false)
 
   const currentIndex = katas.findIndex(k => k.id === kata.id)
@@ -60,7 +62,7 @@ export function DemoKataEditor({ kata, katas }: Props) {
         addLocalCompleted(kata.id)
         addLocalXp(XP_PER_KATA)
         bumpLocalStreak()
-        setCompleted(true)
+        setCompletedIds(getLocalCompleted())
         setShowToast(true)
         setTimeout(() => setShowToast(false), 7000)
       }
@@ -114,6 +116,14 @@ export function DemoKataEditor({ kata, katas }: Props) {
 
   const topBar = (
     <div className="border-border bg-card flex h-12 shrink-0 items-center gap-3 border-b px-5">
+      {!sidebarOpen && !isMobile && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="text-muted-foreground hover:text-foreground hover:bg-accent -ml-2 rounded-md p-1.5 transition-colors"
+        >
+          <ChevronLeft className="h-4 w-4 rotate-180" />
+        </button>
+      )}
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <span className="truncate font-bold tracking-tight">{kata.title}</span>
         {kata.estimatedMinutes && (
@@ -201,26 +211,90 @@ export function DemoKataEditor({ kata, katas }: Props) {
         </>
       ) : (
         <>
-          <ResizablePanelGroup orientation="horizontal" className="flex-1 overflow-hidden">
-            <ResizablePanel defaultSize={40} minSize={20}>
-              <DescriptionPanel key={kata.id} kata={kata} hideHistory />
-            </ResizablePanel>
-
-            <ResizableHandle withHandle />
-
-            <ResizablePanel defaultSize={60} minSize={30}>
-              <div className="flex h-full flex-col">
-                <div className="border-border bg-secondary flex h-10 shrink-0 items-center border-b px-4">
-                  <span className="bg-accent rounded-md px-3 py-1 text-xs font-medium">
-                    solution.ts
-                  </span>
-                </div>
-                <CodeEditor ref={editorRef} initialCode={kata.starterCode} />
+          <div className="flex flex-1 overflow-hidden">
+            {/* Sidebar */}
+            {sidebarOpen && (
+              <div className="border-border bg-card flex h-full w-[220px] shrink-0 flex-col border-r">
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="border-border text-muted-foreground hover:text-foreground hover:bg-accent flex h-12 w-full shrink-0 items-center gap-2 border-b px-2.5 transition-colors"
+                >
+                  <ChevronLeft className="h-4 w-4 shrink-0" />
+                  <span className="text-xs font-semibold tracking-wide">Demo</span>
+                </button>
+                <ScrollArea className="flex-1">
+                  <ul className="px-2 py-2">
+                    {katas.map(k => {
+                      const done = completedIds.includes(k.id)
+                      const active = k.id === kata.id
+                      return (
+                        <li key={k.id}>
+                          <Link
+                            to="/demo/$slug"
+                            params={{ slug: k.slug }}
+                            className={cn(
+                              'hover:bg-accent flex items-center gap-2 rounded-lg px-2 py-2 text-xs transition-colors',
+                              active && 'border-border bg-accent border'
+                            )}
+                          >
+                            <span className="text-muted-foreground w-4 shrink-0 text-right text-[11px]">
+                              {k.order}
+                            </span>
+                            <span
+                              className={cn(
+                                'flex-1 truncate font-medium',
+                                active && 'text-sky-400'
+                              )}
+                            >
+                              {k.title}
+                            </span>
+                            {done ? (
+                              <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-bold text-black">
+                                ✓
+                              </span>
+                            ) : (
+                              <span className="border-border h-4 w-4 shrink-0 rounded-full border-2" />
+                            )}
+                          </Link>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                  <div className="mx-2 mb-3 rounded-xl border border-sky-500/20 bg-sky-500/5 p-3">
+                    <p className="mb-2 text-[11px] font-semibold text-sky-400">Want more katas?</p>
+                    <Link
+                      to="/gate"
+                      className="block w-full rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-center text-[11px] font-semibold text-sky-400 transition-colors hover:border-sky-500/50 hover:bg-sky-500/15"
+                    >
+                      Get beta access →
+                    </Link>
+                  </div>
+                </ScrollArea>
               </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+            )}
+            <div className="flex flex-1 flex-col overflow-hidden">
+              <ResizablePanelGroup orientation="horizontal" className="flex-1 overflow-hidden">
+                <ResizablePanel defaultSize={40} minSize={20}>
+                  <DescriptionPanel key={kata.id} kata={kata} hideHistory />
+                </ResizablePanel>
 
-          {resultsPanel}
+                <ResizableHandle withHandle />
+
+                <ResizablePanel defaultSize={60} minSize={30}>
+                  <div className="flex h-full flex-col">
+                    <div className="border-border bg-secondary flex h-10 shrink-0 items-center border-b px-4">
+                      <span className="bg-accent rounded-md px-3 py-1 text-xs font-medium">
+                        solution.ts
+                      </span>
+                    </div>
+                    <CodeEditor ref={editorRef} initialCode={kata.starterCode} />
+                  </div>
+                </ResizablePanel>
+              </ResizablePanelGroup>
+
+              {resultsPanel}
+            </div>
+          </div>
         </>
       )}
 
