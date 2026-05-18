@@ -11,7 +11,7 @@ import { TooltipProvider } from '#/components/ui/tooltip'
 import { BottomNav } from '#/components/layout/BottomNav'
 import { signIn, signOut } from '#/lib/auth-client'
 import { clearAllLocal } from '#/lib/local-progress'
-import { getSession } from '#/server/auth'
+import { getIsDemo, getSession } from '#/server/auth'
 import { cancelAccountDeletion, getScheduledDeletion } from '#/server/account'
 import { getNextKata, getUserStats } from '#/server/progress'
 import {
@@ -32,13 +32,14 @@ const XP_PER_LEVEL = 500
 
 export const Route = createRootRoute({
   loader: async () => {
-    const [session, stats, nextKata, scheduledDeletionAt] = await Promise.all([
+    const [session, stats, nextKata, scheduledDeletionAt, isDemo] = await Promise.all([
       getSession(),
       getUserStats(),
       getNextKata(),
-      getScheduledDeletion()
+      getScheduledDeletion(),
+      getIsDemo()
     ])
-    return { session, stats, nextKata, scheduledDeletionAt }
+    return { session, stats, nextKata, scheduledDeletionAt, isDemo }
   },
   head: () => ({
     meta: [
@@ -104,10 +105,10 @@ function DeletionBanner({ scheduledAt }: { scheduledAt: Date }) {
 }
 
 function RootLayout() {
-  const { session, stats, nextKata, scheduledDeletionAt } = Route.useLoaderData()
+  const { session, stats, nextKata, scheduledDeletionAt, isDemo } = Route.useLoaderData()
   const routerState = useRouterState()
   const isGatePage = routerState.location.pathname === '/gate'
-  const isDemoPage = routerState.location.pathname.startsWith('/demo')
+  const isDemoPage = isDemo || routerState.location.pathname.startsWith('/demo')
   const user = session?.user as
     | { role?: string; name?: string | null; email: string; image?: string | null }
     | undefined
@@ -310,7 +311,7 @@ function RootLayout() {
         <Outlet />
       </div>
 
-      <BottomNav nextKataSlug={nextKata?.slug ?? null} isLoggedIn={!!user} />
+      <BottomNav nextKataSlug={nextKata?.slug ?? null} isLoggedIn={!!user} isDemo={isDemoPage} />
     </>
   )
 }

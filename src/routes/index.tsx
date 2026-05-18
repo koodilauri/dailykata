@@ -1,13 +1,16 @@
 import { cn } from '#/lib/utils'
 import { getLocalCompleted } from '#/lib/local-progress'
+import { getIsDemo } from '#/server/auth'
 import { getSections } from '#/server/kata'
 import { getUserProgress } from '#/server/progress'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { ArrowRight, ArrowUp } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 export const Route = createFileRoute('/')({
   loader: async () => {
+    const isDemo = await getIsDemo()
+    if (isDemo) throw redirect({ to: '/demo' })
     const [sections, progress] = await Promise.all([getSections(), getUserProgress()])
     return { sections, progress }
   },

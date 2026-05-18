@@ -1,6 +1,7 @@
 import { KataSidebar } from '#/components/editor/KataSidebar'
 import { SidebarContext } from '#/components/editor/sidebar-context'
-import { createFileRoute, Outlet, useRouterState } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect, useRouterState } from '@tanstack/react-router'
+import { getIsDemo } from '#/server/auth'
 import { getLocalCompleted } from '#/lib/local-progress'
 import { useEffect, useState } from 'react'
 
@@ -130,5 +131,9 @@ function KataLayout() {
 }
 
 export const Route = createFileRoute('/kata')({
+  loader: async () => {
+    const isDemo = await getIsDemo()
+    if (isDemo) throw redirect({ to: '/demo' })
+  },
   component: KataLayout
 })

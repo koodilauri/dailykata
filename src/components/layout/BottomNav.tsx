@@ -3,7 +3,7 @@
 import { cn } from '#/lib/utils'
 import { signIn } from '#/lib/auth-client'
 import { Link, useRouterState } from '@tanstack/react-router'
-import { Home, LogIn, ScrollText, PlayCircle, User } from 'lucide-react'
+import { Home, LogIn, ScrollText, PlayCircle, User, FlaskConical } from 'lucide-react'
 
 type NavTabProps = {
   to: string
@@ -43,11 +43,26 @@ function NavTab({ to, label, Icon, active }: NavTabProps) {
 interface Props {
   nextKataSlug: string | null
   isLoggedIn: boolean
+  isDemo: boolean
 }
 
-export function BottomNav({ nextKataSlug, isLoggedIn }: Props) {
+export function BottomNav({ nextKataSlug, isLoggedIn, isDemo }: Props) {
   const pathname = useRouterState({ select: s => s.location.pathname })
   const continueActive = pathname.startsWith('/kata/')
+
+  if (isDemo) {
+    return (
+      <nav className="border-border bg-card/95 fixed right-0 bottom-0 left-0 z-50 flex h-16 items-start justify-around border-t pt-2 backdrop-blur-sm md:hidden">
+        <NavTab to="/demo" label="Demo" Icon={FlaskConical} active={pathname.startsWith('/demo')} />
+        <Link to="/gate" className="flex flex-1 flex-col items-center gap-0.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-500/15">
+            <LogIn className="h-5 w-5 text-sky-400" />
+          </div>
+          <span className="text-[10px] font-semibold tracking-wide text-sky-400">Get access</span>
+        </Link>
+      </nav>
+    )
+  }
 
   if (!isLoggedIn) {
     return (
