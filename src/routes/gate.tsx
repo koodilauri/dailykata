@@ -24,13 +24,13 @@ export const Route = createFileRoute('/gate')({
         const password = body.get('password') as string
         if (password === process.env.BETA_PASSWORD) {
           const signed = await signCookieValue('beta', secret)
-          return new Response(null, {
-            status: 303,
-            headers: {
-              Location: '/',
-              'Set-Cookie': `beta_access=${signed}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000`
-            }
-          })
+          const headers = new Headers({ Location: '/' })
+          headers.append(
+            'Set-Cookie',
+            `beta_access=${signed}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000`
+          )
+          headers.append('Set-Cookie', `demo_access=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`)
+          return new Response(null, { status: 303, headers })
         }
 
         // Wrong password — re-render with error flag
