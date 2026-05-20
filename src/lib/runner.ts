@@ -74,9 +74,50 @@ export function buildIframeDoc(userJs: string, testJs: string): string {
           throw new Error('toContain requires array or string');
         }
       },
+      toBeNull: function() {
+        if (actual !== null) throw new Error('Expected null but got ' + JSON.stringify(actual));
+      },
+      toBeUndefined: function() {
+        if (actual !== undefined) throw new Error('Expected undefined but got ' + JSON.stringify(actual));
+      },
       toThrow: function() {
         if (typeof actual !== 'function') throw new Error('toThrow requires a function');
         try { actual(); throw new Error('Expected function to throw'); } catch(e) { if (e.message === 'Expected function to throw') throw e; }
+      },
+      not: {
+        toBe: function(expected) {
+          if (actual === expected) throw new Error('Expected value not to be ' + JSON.stringify(expected));
+        },
+        toEqual: function(expected) {
+          function deepEqual(a, b) {
+            if (a === b) return true;
+            if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
+            if (Array.isArray(a) !== Array.isArray(b)) return false;
+            var keysA = Object.keys(a), keysB = Object.keys(b);
+            if (keysA.length !== keysB.length) return false;
+            return keysA.every(function(k) { return Object.prototype.hasOwnProperty.call(b, k) && deepEqual(a[k], b[k]); });
+          }
+          if (deepEqual(actual, expected)) throw new Error('Expected values not to be equal');
+        },
+        toBeTruthy: function() {
+          if (actual) throw new Error('Expected falsy value but got ' + JSON.stringify(actual));
+        },
+        toBeFalsy: function() {
+          if (!actual) throw new Error('Expected truthy value but got ' + JSON.stringify(actual));
+        },
+        toContain: function(item) {
+          if (Array.isArray(actual)) {
+            if (actual.includes(item)) throw new Error('Expected array not to contain ' + JSON.stringify(item));
+          } else if (typeof actual === 'string') {
+            if (actual.includes(item)) throw new Error('Expected string not to contain ' + JSON.stringify(item));
+          }
+        },
+        toBeNull: function() {
+          if (actual === null) throw new Error('Expected value not to be null');
+        },
+        toBeUndefined: function() {
+          if (actual === undefined) throw new Error('Expected value not to be undefined');
+        },
       },
     };
   }
