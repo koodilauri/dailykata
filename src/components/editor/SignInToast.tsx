@@ -29,13 +29,6 @@ export function SignInToast({ show, kataTitle, nextKataSlug, onDismiss }: Props)
           ⭐
         </span>
 
-        <div
-          className="flex h-20 w-20 items-center justify-center rounded-2xl bg-linear-to-br from-emerald-600 to-sky-500 text-4xl"
-          style={{ boxShadow: '0 0 40px rgba(52,211,153,0.5)' }}
-        >
-          ⚔
-        </div>
-
         <div>
           <p className="text-2xl font-black tracking-tight">You solved it!</p>
           <p className="text-muted-foreground mt-1 text-sm">{kataTitle}</p>

@@ -83,7 +83,7 @@ function Home() {
         <div className="relative mb-5 flex items-start justify-between">
           <div>
             <p className="text-muted-foreground text-sm">{greeting},</p>
-            <p className="text-xl font-bold tracking-tight">{name} ⚔</p>
+            <p className="text-xl font-bold tracking-tight">{name}</p>
           </div>
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-sky-600 to-violet-500 text-lg font-bold text-white shadow-lg">
             {initial}

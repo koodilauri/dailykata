@@ -95,12 +95,12 @@ export function ActivityCalendar({ progress, streak }: Props) {
                   className={cn(
                     'flex aspect-square items-center justify-center rounded-lg text-sm font-semibold transition-colors',
                     isFuture
-                      ? 'text-muted-foreground/30'
+                      ? 'text-muted-foreground/25'
                       : done
-                        ? 'bg-sky-500/20 text-sky-400'
-                        : 'text-muted-foreground/50',
-                    isToday && done && 'bg-sky-500/30 ring-1 ring-sky-400',
-                    isToday && !done && 'ring-muted-foreground/30 ring-1'
+                        ? 'bg-sky-500/30 text-sky-300'
+                        : 'bg-muted/60 text-muted-foreground/70',
+                    isToday && done && 'bg-sky-500/40 ring-1 ring-sky-300',
+                    isToday && !done && 'bg-muted/60 ring-muted-foreground/40 ring-1'
                   )}
                 >
                   {day.getDate()}

@@ -317,13 +317,6 @@ export function DemoKataEditor({ kata, katas }: Props) {
               ⭐
             </span>
 
-            <div
-              className="flex h-20 w-20 items-center justify-center rounded-2xl bg-linear-to-br from-sky-600 to-violet-500 text-4xl"
-              style={{ boxShadow: '0 0 40px rgba(56,189,248,0.5)' }}
-            >
-              ⚔
-            </div>
-
             <div>
               <p className="text-2xl font-black tracking-tight">Kata Complete!</p>
               <p className="text-muted-foreground mt-1 text-sm">{kata.title}</p>
